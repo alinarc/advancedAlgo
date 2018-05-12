@@ -29,10 +29,10 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   // fileName = "knapsack16.input";
+   fileName = "knapsack/knapsack8.input";
 
-   cout << "Enter filename" << endl;
-   cin >> fileName;
+   /* cout << "Enter filename" << endl;
+   cin >> fileName; */
    
    fin.open(fileName.c_str());
    if (!fin)
@@ -45,6 +45,8 @@ int main()
    {
       cout << "Reading knapsack instance" << endl;
       knapsack k(fin);
+
+      cout << k << endl;
 
       exhaustiveKnapsack(k, 600);
 
@@ -65,5 +67,27 @@ int main()
 
 void exhaustiveKnapsack(knapsack &k, const int &t)
 {
+    int curr = k.getNumObjects() - 1;
+    int limit = k.getCostLimit() - k.getCost();
+    if (curr >= 0 && limit != 0)
+    {
+        if (k.getCost(curr) > limit)
+        {
+            k.unSelect(curr);
+            exhaustiveKnapsack(k, t);
+        }
+        else
+        {
+            k.select(curr);
+                exhaustiveKnapsack(k, t);
+            k.unSelect(curr);
+                exhaustiveKnapsack(k, t);
+        }
 
+        curr = curr - 1;
+        limit = limit - k.getCost();
+
+        cout << "current item is now " << curr << endl;
+        cout << "limit is now " << limit << endl << endl;
+    }  
 }
