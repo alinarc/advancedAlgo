@@ -14,7 +14,6 @@ using namespace std;
 
 #include "d_except.h"
 #include "d_matrix.h"
-//#include "graph.h"
 #include "knapsack.h"
 
 void exhaustiveKnapsack(knapsack &k, const int &t);
@@ -25,6 +24,7 @@ int main()
    ifstream fin;
    stack <int> moves;
    string fileName;
+   vector <knapsack> pos;
    
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
@@ -48,10 +48,12 @@ int main()
 
       cout << k << endl;
 
+      //cout << "the total value of the knapsack is " << k.getValue() << endl;
+
       exhaustiveKnapsack(k, 600);
 
-      cout << endl << "Best solution" << endl;
-      k.printSolution();
+      //cout << endl << "Best solution" << endl;
+      //k.printSolution();
       
    }    
 
@@ -68,26 +70,29 @@ int main()
 void exhaustiveKnapsack(knapsack &k, const int &t)
 {
     int curr = k.getNumObjects() - 1;
-    int limit = k.getCostLimit() - k.getCost();
-    if (curr >= 0 && limit != 0)
+//    int limit = k.getCostLimit() - k.getCost();
+    pos.push_back(k);
+    while (curr >= 0)
     {
-        if (k.getCost(curr) > limit)
+        if (k.getCost(curr) > k.getCostLimit())
         {
             k.unSelect(curr);
-            exhaustiveKnapsack(k, t);
+            //exhaustiveKnapsack(k, t);
         }
         else
         {
-            k.select(curr);
-                exhaustiveKnapsack(k, t);
-            k.unSelect(curr);
-                exhaustiveKnapsack(k, t);
+            knapsack k1(k); 
+            knapsack k2(k);
+
+            k1.select(curr);
+                pos.push_back(k1);
+                exhaustiveKnapsack(pos.at(pos.size()-1), t);
+            k2.unSelect(curr);
+                pos.push_back(k2);
+                exhaustiveKnapsack(pos.at(pos.size()-1), t);
         }
 
         curr = curr - 1;
-        limit = limit - k.getCost();
-
         cout << "current item is now " << curr << endl;
-        cout << "limit is now " << limit << endl << endl;
     }  
 }
