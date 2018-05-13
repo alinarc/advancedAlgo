@@ -182,9 +182,9 @@ void knapsack::select(int i)
       selected[i] = true;
       totalCost = totalCost + getCost(i);
       totalValue = totalValue + getValue(i);
-      cout << "adding item " << i << " to knapsack " << endl;
+      /* out << "adding item " << i << " to knapsack " << endl;
       cout << "the total value of the knapsack is now " << totalValue << endl << endl;
-   }
+ */   }
 }
 
 void knapsack::unSelect(int i)
@@ -198,6 +198,9 @@ void knapsack::unSelect(int i)
       selected[i] = false;
       totalCost = totalCost - getCost(i);
       totalValue = totalValue - getValue(i);
+      cout << "removing item " << i << " to knapsack " << endl;
+      cout << "the total value of the knapsack is now " << totalValue << endl << endl;
+
    }
 }
 

@@ -17,6 +17,7 @@ using namespace std;
 #include "knapsack.h"
 
 void exhaustiveKnapsack(knapsack &k, const int &t);
+void generateAlternatives(knapsack &k, int curr, vector <knapsack> &pos);
 
 int main()
 {
@@ -29,7 +30,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack8.input";
+   fileName = "knapsack/knapsack32.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -52,8 +53,8 @@ int main()
 
       exhaustiveKnapsack(k, 600);
 
-      //cout << endl << "Best solution" << endl;
-      //k.printSolution();
+      cout << endl << "Best solution" << endl;
+      k.printSolution();
       
    }    
 
@@ -71,8 +72,9 @@ void exhaustiveKnapsack(knapsack &k, const int &t)
 {
     int curr = k.getNumObjects() - 1;
 //    int limit = k.getCostLimit() - k.getCost();
+    vector <knapsack> pos;
     pos.push_back(k);
-    while (curr >= 0)
+    if (curr >= 0)
     {
         if (k.getCost(curr) > k.getCostLimit())
         {
@@ -81,18 +83,40 @@ void exhaustiveKnapsack(knapsack &k, const int &t)
         }
         else
         {
-            knapsack k1(k); 
-            knapsack k2(k);
-
-            k1.select(curr);
-                pos.push_back(k1);
-                exhaustiveKnapsack(pos.at(pos.size()-1), t);
-            k2.unSelect(curr);
-                pos.push_back(k2);
-                exhaustiveKnapsack(pos.at(pos.size()-1), t);
+            generateAlternatives(k, curr, pos);
         }
 
-        curr = curr - 1;
-        cout << "current item is now " << curr << endl;
+        //curr = curr - 1;
+        //cout << "current item is now " << curr << endl;
     }  
+    int max = 0 , imax = 0;
+    for (int i = 0; i < pos.size(); i++)
+    {
+        if (pos.at(i).getValue() > max && pos.at(i).getCost() <= pos.at(i).getCostLimit())
+        {
+            max = pos.at(i).getValue();
+            imax = i;
+        }
+    }
+
+    k = pos.at(imax);
 }
+
+void generateAlternatives(knapsack &k, int curr, vector <knapsack> &pos)
+{
+    knapsack k1(k);
+    knapsack k2(k);
+
+    k1.select(curr);
+        pos.push_back(k1);
+        /* cout << "working with knapsack in location " << pos.size()-1 <<  " in vector" << endl;
+         */if (curr > 0)
+            generateAlternatives(pos.at(pos.size()-1), curr-1, pos);
+    k2.unSelect(curr);
+        pos.push_back(k2);
+        /* cout << "working with knapsack in location " << pos.size() -1 << " in vector " << endl;
+         */if (curr > 0)
+            generateAlternatives(pos.at(pos.size()-1), curr-1, pos);
+        
+}
+
