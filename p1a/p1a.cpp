@@ -107,11 +107,14 @@ void generateAlternatives(knapsack &k, int curr, vector <knapsack> &pos)
     knapsack k1(k);
     knapsack k2(k);
 
-    k1.select(curr);
+    if (k1.getCost() + k1.getCost(curr) <= k1.getCostLimit())
+    {
+        k1.select(curr);
         pos.push_back(k1);
         /* cout << "working with knapsack in location " << pos.size()-1 <<  " in vector" << endl;
          */if (curr > 0)
             generateAlternatives(pos.at(pos.size()-1), curr-1, pos);
+    }
     k2.unSelect(curr);
         pos.push_back(k2);
         /* cout << "working with knapsack in location " << pos.size() -1 << " in vector " << endl;
