@@ -17,7 +17,8 @@ using namespace std;
 #include "knapsack.h"
 
 void exhaustiveKnapsack(knapsack &k, const int &t);
-void generateAlternatives(knapsack &k, int curr, vector <knapsack> &pos);
+void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb);
+void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs);
 
 int main()
 {
@@ -30,7 +31,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack28.input";
+   fileName = "knapsack/knapsack32.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -70,11 +71,20 @@ int main()
 
 void exhaustiveKnapsack(knapsack &k, const int &t)
 {
-    int curr = k.getNumObjects() - 1;
-//    int limit = k.getCostLimit() - k.getCost();
-    vector <knapsack> pos;
-    pos.push_back(k);
-    if (curr >= 0)
+    int n = k.getNumObjects() - 1;
+    int r = 2;
+
+    vector <int> items;
+    for (int i = 0; i <= n; i++)
+    {
+        items.push_back(i);
+    }
+
+    vector <int> comb;
+
+    generateAllCombinations(k, 0, n, 0, items, comb);
+
+  /*   if (curr >= 0)
     {
         if (k.getCost(curr) > k.getCostLimit())
         {
@@ -84,42 +94,56 @@ void exhaustiveKnapsack(knapsack &k, const int &t)
         else
         {
             generateAlternatives(k, curr, pos);
-        }
+        } */
 
-        //curr = curr - 1;
-        //cout << "current item is now " << curr << endl;
-    }  
-    int max = 0 , imax = 0;
-    for (int i = 0; i < pos.size(); i++)
-    {
-        if (pos.at(i).getValue() > max && pos.at(i).getCost() <= pos.at(i).getCostLimit())
-        {
-            max = pos.at(i).getValue();
-            imax = i;
-        }
-    }
-
-    k = pos.at(imax);
 }
 
-void generateAlternatives(knapsack &k, int curr, vector <knapsack> &pos)
+void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs)
 {
-    knapsack k1(k);
-    knapsack k2(k);
-
-    if (k1.getCost() + k1.getCost(curr) <= k1.getCostLimit())
+    cout << "generating all combinations " << endl;
+    for (int r = end+1; r > 0; r--)
     {
-        k1.select(curr);
-        pos.push_back(k1);
-        /* cout << "working with knapsack in location " << pos.size()-1 <<  " in vector" << endl;
-         */if (curr > 0)
-            generateAlternatives(pos.at(pos.size()-1), curr-1, pos);
+        combs.clear();
+        combs.resize(r);
+        generateRcombinations(k, r, start, end, index, items, combs);
     }
-    k2.unSelect(curr);
-        pos.push_back(k2);
-        /* cout << "working with knapsack in location " << pos.size() -1 << " in vector " << endl;
-         */if (curr > 0)
-            generateAlternatives(pos.at(pos.size()-1), curr-1, pos);
-        
+}
+
+void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb)
+{
+    //cout << "generating combinations of size " << r << endl;
+    if (index == r)
+    {
+
+        int cost = 0;
+        int value = 0;
+
+        for (int i = 0; i < r; i++)
+        {
+            cost = cost + k.getCost(comb.at(i));
+        }
+        for (int i = 0; i < r; i++)
+        {
+            value = value + k.getValue(comb.at(i));
+        }
+        if (cost <= k.getCostLimit() && value > k.getValue())
+        {
+            for (int i = 0; i <= end; i++)
+            {
+                k.unSelect(i);
+            }
+            for (int i = 0; i < r; i++)
+            {
+                k.select(comb.at(i));
+            }
+        }
+        return;
+    }
+
+    for (int i = start; i <= end && end-i+1 >= r-index; i++)
+    {
+        comb.at(index) = items.at(i);
+        generateRcombinations(k, r, i+1, end, index+1, items, comb);
+    }        
 }
 
