@@ -17,8 +17,9 @@ using namespace std;
 #include "knapsack.h"
 
 void exhaustiveKnapsack(knapsack &k, const int &t);
+void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs, const int &t);
 void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb);
-void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs);
+
 
 int main()
 {
@@ -31,7 +32,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack48.input";
+   fileName = "knapsack/knapsack32.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -49,8 +50,6 @@ int main()
       knapsack k(fin);
 
       cout << k << endl;
-
-      //cout << "the total value of the knapsack is " << k.getValue() << endl;
 
       exhaustiveKnapsack(k, 600);
 
@@ -72,7 +71,6 @@ int main()
 void exhaustiveKnapsack(knapsack &k, const int &t)
 {
     int n = k.getNumObjects() - 1;
-    int r = 2;
 
     vector <int> items;
     for (int i = 0; i <= n; i++)
@@ -82,57 +80,55 @@ void exhaustiveKnapsack(knapsack &k, const int &t)
 
     vector <int> comb;
 
-    generateAllCombinations(k, 0, n, 0, items, comb);
-
-  /*   if (curr >= 0)
-    {
-        if (k.getCost(curr) > k.getCostLimit())
-        {
-            k.unSelect(curr);
-            //exhaustiveKnapsack(k, t);
-        }
-        else
-        {
-            generateAlternatives(k, curr, pos);
-        } */
-
+    generateAllCombinations(k, 0, n, 0, items, comb, t);
 }
 
-void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs)
+void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs, const int &t)
+// Calls generateRCombinations in a for loop to generate all combinations from size n (number of items) down to 1
 {
-    cout << "generating all combinations " << endl;
+    clock_t startTime = clock();
+
     for (int r = end+1; r > 0; r--)
     {
         combs.clear();
         combs.resize(r);
-        generateRcombinations(k, r, start, end, index, items, combs);
+
+        int diff = clock() - startTime;
+        int runTime = diff / CLOCKS_PER_SEC;
+        cout << "runtime is " << runTime << endl;
+
+        if (runTime <= t)
+        {    
+            generateRcombinations(k, r, start, end, index, items, combs);
+        }
+        else return;
     }
 }
 
 void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb)
+/* Recursive function to generate all combinations of size r of n items, which are stored in the items vector. 
+These combinations are stored in the vector comb, one at a time, and the value and cost of each combination is evaluated. 
+Value and cost of k, the optimal knapsack, is updated accordingly.
+ */
 {
-    //cout << "generating combinations of size " << r << endl;
-    if (index == r)
+    if (index == r) // Combination of size r is ready to be evaluated
     {
-
         int cost = 0;
         int value = 0;
 
-        for (int i = 0; i < r; i++)
+        for (int i = 0; i < r; i++) // Evaluates cost of combination
         {
             cost = cost + k.getCost(comb.at(i));
         }
-        for (int i = 0; i < r; i++)
+        for (int i = 0; i < r; i++) // Evaluates value of combination
         {
             value = value + k.getValue(comb.at(i));
         }
-        if (cost <= k.getCostLimit() && value > k.getValue())
+        if (cost <= k.getCostLimit() && value > k.getValue()) // If new knapsack has higher value and meets cost restraint
         {
-            for (int i = 0; i <= end; i++)
-            {
-                k.unSelect(i);
-            }
-            for (int i = 0; i < r; i++)
+            k.unSelectAll();
+
+            for (int i = 0; i < r; i++) // Select combination of items
             {
                 k.select(comb.at(i));
             }
@@ -140,7 +136,7 @@ void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, 
         return;
     }
 
-    for (int i = start; i <= end && end-i+1 >= r-index; i++)
+    for (int i = start; i <= end && end-i+1 >= r-index; i++) // Triggers recursion
     {
         comb.at(index) = items.at(i);
         generateRcombinations(k, r, i+1, end, index+1, items, comb);

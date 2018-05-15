@@ -16,6 +16,7 @@ class knapsack
       void select(int);
       void unSelect(int);
       bool isSelected(int) const;
+      void unSelectAll();
 
    private:
       int numObjects;
@@ -213,3 +214,11 @@ bool knapsack::isSelected(int i) const
    return selected[i];
 }
 
+void knapsack::unSelectAll()
+{
+      for(int i = 0; i < getNumObjects(); i++)
+      {
+            if (isSelected(i))
+                  unSelect(i);
+      }
+}
