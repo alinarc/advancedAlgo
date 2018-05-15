@@ -32,7 +32,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack32.input";
+   fileName = "knapsack/knapsack16.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -95,7 +95,7 @@ void generateAllCombinations(knapsack &k, int start, int &end, int index, vector
 
         int diff = clock() - startTime;
         int runTime = diff / CLOCKS_PER_SEC;
-        cout << "runtime is " << runTime << endl;
+        //cout << "runtime is " << runTime << endl;
 
         if (runTime <= t)
         {    
