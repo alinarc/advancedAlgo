@@ -18,6 +18,11 @@ struct VertexProperties;
 struct EdgeProperties;
 
 typedef adjacency_list<vecS, vecS, bidirectionalS, VertexProperties, EdgeProperties> Graph;
+typedef Graph::vertex_descriptor Vertex;
+typedef Graph::edge_descriptor Edge;
+typedef Graph::edge_iterator edge_iterator;
+typedef Graph::vertex_iterator vertex_iterator;
+typedef Graph::adjacency_iterator adj_iterator;
 
 struct VertexProperties
 {
