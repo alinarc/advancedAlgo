@@ -34,7 +34,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack28.input";
+   fileName = "knapsack/knapsack16.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -55,7 +55,7 @@ int main()
 
      // const clock_t startTime = clock();
 
-      exhaustiveKnapsack(k, 15);
+      exhaustiveKnapsack(k, 600);
 
       cout << endl << "Best solution" << endl;
       k.printSolution();
