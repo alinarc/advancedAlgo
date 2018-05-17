@@ -34,7 +34,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack16.input";
+   fileName = "knapsack/knapsack32.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
