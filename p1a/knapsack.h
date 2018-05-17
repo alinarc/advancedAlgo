@@ -164,7 +164,7 @@ void knapsack::printSolution()
 
    ofstream outputFile;
    numObjects = getNumObjects();
-   outputFile.open("knapsack"+to_string(numObjects)+".output");
+   outputFile.open("outputs/knapsack"+to_string(numObjects)+".output");
    outputFile << "Total value: " << getValue() << endl;
    outputFile << "Total cost: " << getCost() << endl << endl;
    for (int i = 0; i < getNumObjects(); i++)
