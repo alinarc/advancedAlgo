@@ -35,7 +35,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack32.input";
+   fileName = "knapsack/knapsack48.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -147,12 +147,17 @@ void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, 
             }
             return;
         }
+
+        for (int i = start; i <= end && end-i+1 >= r-index; i++) // Triggers recursion
+        {
+            comb.at(index) = items.at(i);
+            generateRcombinations(k, r, i+1, end, index+1, items, comb, t, startTime);
+        }   
     }
-    else return;
-    for (int i = start; i <= end && end-i+1 >= r-index; i++) // Triggers recursion
+    else 
     {
-        comb.at(index) = items.at(i);
-        generateRcombinations(k, r, i+1, end, index+1, items, comb, t, startTime);
-    }        
+        cout << "time is " << runTime << endl;
+        return;     
+    }
 }
 
