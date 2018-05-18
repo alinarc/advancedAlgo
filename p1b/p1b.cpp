@@ -26,8 +26,10 @@ typedef Graph::adjacency_iterator adj_iterator;
 
 int exhaustiveColoring(Graph &g, int numColors, int t);
 void printSolution(Graph &g, int numConflicts);
-void computeVertexDegrees(Graph &g);
-void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
+int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor);
+int calculateNumConflicts(Graph &g);
+//void computeVertexDegrees(Graph &g);
+//void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
 
 struct VertexProperties
 {
@@ -37,7 +39,7 @@ struct VertexProperties
     bool marked;
     int weight;
     int color;
-    int degree;
+    //int degree;
 };
 
 // Create a struct to hold properties for each edge
@@ -65,12 +67,12 @@ void initializeGraph(Graph &g, ifstream &fin)
     {
         fin >> j >> k;
         add_edge(j,k,g);  // Assumes vertex list is type vecS
-        add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
+        //add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
     }
-    computeVertexDegrees(g);
+    //computeVertexDegrees(g);
 }
 
-void computeVertexDegrees(Graph &g)
+/* void computeVertexDegrees(Graph &g)
 {
     pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
     for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
@@ -84,8 +86,9 @@ void computeVertexDegrees(Graph &g)
         g[*vItr].degree = count;
     }
 }
+*/
 
-void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
+/* void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
 {
     //nodes.resize(num_vertices(g));
     int currMax;
@@ -109,7 +112,7 @@ void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
             }
         }
     }
-}
+} */
 
 void setNodeWeights(Graph &g, int w)
 // Set all node weights to w.
@@ -172,6 +175,15 @@ int main()
         cout << "Num edges: " << num_edges(g) << endl;
         cout << endl;
 
+        pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+        {
+            g[*vItr].color = 0;
+        }
+
+        numConflicts = calculateNumConflicts(g);
+        cout << "there are " << numConflicts << " conflicts" << endl;
+
         // cout << g;
         
         //numConflicts = exhaustiveColoring(g, numColors, 600);
@@ -188,22 +200,32 @@ int main()
     }
 }
 
+int calculateNumConflicts(Graph &g)
+{
+    int numConflicts = 0;
+
+    pair <edge_iterator, edge_iterator> eItrRange = edges(g);
+    for (edge_iterator eItr = eItrRange.first; eItr != eItrRange.second; ++eItr)
+    {
+        if (g[target(*eItr, g)].color == g[source(*eItr, g)].color)
+        {
+            numConflicts = numConflicts + 1;
+        }
+    }
+    return numConflicts;
+}
+
 int exhaustiveColoring(Graph &g, int numColors, int t)
 {
-    vector <Vertex> sortedNodes;
-    sortVerticesByDegree(g, sortedNodes);
-    vector <Vertex> uncolored = sortedNodes;
+    //vector <Vertex> sortedNodes;
+    //sortVerticesByDegree(g, sortedNodes);
+    //vector <Vertex> uncolored = sortedNodes;
     int currColor = 0;
-    int numConflicts = exhaustiveColoringUtil(g, numColors, t, sortedNodes, vector <Vertex> uncolored, int currColor);
-    return numConflicts;
+    //int numConflicts = exhaustiveColoringUtil(g, numColors, t, sortedNodes, vector <Vertex> uncolored, int currColor);
+    //return numConflicts;
 }
 
 int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor)
 {
-    if (!uncolored.empty())
-    {
-        Vertex curr = uncolored.pop_front();
-        g[curr].color = currColor;
-    }
 
 }

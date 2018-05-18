@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp"
     }
 }
