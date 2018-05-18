@@ -217,12 +217,7 @@ int calculateNumConflicts(Graph &g)
 
 int exhaustiveColoring(Graph &g, int numColors, int t)
 {
-    //vector <Vertex> sortedNodes;
-    //sortVerticesByDegree(g, sortedNodes);
-    //vector <Vertex> uncolored = sortedNodes;
-    int currColor = 0;
-    //int numConflicts = exhaustiveColoringUtil(g, numColors, t, sortedNodes, vector <Vertex> uncolored, int currColor);
-    //return numConflicts;
+    
 }
 
 int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor)
