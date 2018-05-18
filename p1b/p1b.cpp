@@ -24,6 +24,11 @@ typedef Graph::edge_iterator edge_iterator;
 typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
+int exhaustiveColoring(Graph &g, int numColors, int t);
+void printSolution(Graph &g, int numConflicts);
+void computeVertexDegrees(Graph &g);
+void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
+
 struct VertexProperties
 {
     pair<int,int> cell; // maze cell (x,y) value
@@ -31,6 +36,8 @@ struct VertexProperties
     bool visited;
     bool marked;
     int weight;
+    int color;
+    int degree;
 };
 
 // Create a struct to hold properties for each edge
@@ -58,6 +65,49 @@ void initializeGraph(Graph &g, ifstream &fin)
     {
         fin >> j >> k;
         add_edge(j,k,g);  // Assumes vertex list is type vecS
+        add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
+    }
+    computeVertexDegrees(g);
+}
+
+void computeVertexDegrees(Graph &g)
+{
+    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+    {
+        int count = 0;
+        pair <adj_iterator, adj_iterator> adjItrRange = adjacent_vertices(*vItr, g);
+        for (adj_iterator adjItr = adjItrRange.first; adjItr != adjItrRange.second; ++adjItr)
+        {
+            count = count + 1;
+        } 
+        g[*vItr].degree = count;
+    }
+}
+
+void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
+{
+    //nodes.resize(num_vertices(g));
+    int currMax;
+    
+    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+    {
+        if (g[*vItr].degree > currMax)
+        {
+            currMax = g[*vItr].degree;
+        }
+    }
+
+    for (int deg = currMax; deg >= 0; deg--)
+    {
+        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+        {
+            if (g[*vItr].degree == deg)
+            {
+                nodes.push_back(*vItr);
+            }
+        }
     }
 }
 
@@ -72,6 +122,21 @@ void setNodeWeights(Graph &g, int w)
     }
 }
 
+void printSolution(Graph &g, int numConflicts)//, string filePath_output)
+{
+    //ofstream myfile;
+
+    //myfile.open(filePath_output.c_str());
+
+    cout << "Total Conflicts: " << numConflicts << endl;
+
+    for (int counter = 0; counter < num_vertices(g); counter++)
+    {
+        cout << counter << ": " << g[counter].color << endl;
+    }
+    //myfile.close();
+}
+
 int main()
 {
     char x;
@@ -81,7 +146,7 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
     
-    fileName = "color/color12-3.input";
+    fileName = "color/colortest.input";
     
     //   cout << "Enter filename" << endl;
     //   cin >> fileName;
@@ -101,11 +166,12 @@ int main()
         int numConflicts = -1;
         fin >> numColors;
         initializeGraph(g,fin);
+
         
         cout << "Num nodes: " << num_vertices(g) << endl;
         cout << "Num edges: " << num_edges(g) << endl;
         cout << endl;
-        
+
         // cout << g;
         
         //numConflicts = exhaustiveColoring(g, numColors, 600);
@@ -120,4 +186,24 @@ int main()
     {
         cout << ex.what() << endl; exit(1);
     }
+}
+
+int exhaustiveColoring(Graph &g, int numColors, int t)
+{
+    vector <Vertex> sortedNodes;
+    sortVerticesByDegree(g, sortedNodes);
+    vector <Vertex> uncolored = sortedNodes;
+    int currColor = 0;
+    int numConflicts = exhaustiveColoringUtil(g, numColors, t, sortedNodes, vector <Vertex> uncolored, int currColor);
+    return numConflicts;
+}
+
+int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor)
+{
+    if (!uncolored.empty())
+    {
+        Vertex curr = uncolored.pop_front();
+        g[curr].color = currColor;
+    }
+
 }
