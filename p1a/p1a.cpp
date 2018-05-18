@@ -35,7 +35,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack48.input";
+   fileName = "knapsack/knapsack1024.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -56,7 +56,7 @@ int main()
 
      // const clock_t startTime = clock();
 
-      exhaustiveKnapsack(k, 600);
+      exhaustiveKnapsack(k,  600);
 
       cout << endl << "Best solution" << endl;
       k.printSolution();
@@ -95,7 +95,7 @@ void generateAllCombinations(knapsack &k, int start, int &end, int index, vector
 {
     //clock_t startTime = clock();
 
-    for (int r = end+1; r > 0; r--)
+    for (int r = 0; r < end+1; r++)
     {
         combs.clear();
         combs.resize(r);

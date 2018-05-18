@@ -1,0 +1,8 @@
+For this first project the algorithm we implemented as the exhaustive algorithm. While simple on the surface, "execute every
+possible option," there were many hurdles the team ran into in the execution. One roadblock was at first the group attempted
+to write each possible combination into a vector, this proved to be extremely resource intensive an infeasible. The decision
+was made instead to just hold the best combination at the time as a vector. Another problem arose when the larger sized 
+variations were not yielding any results if cut off by the 600 second time limit. The source of this problem was tracked to
+the point where the team had initially checked the combinations of maximum size and worked our way down. It was discovered 
+that with the larger sized variations, no combination was discovered in time that satisfied the cost requirement, returning
+an empty vector; this was solved by reversing the order and beginning with combinations of size 1 and working our way up.
