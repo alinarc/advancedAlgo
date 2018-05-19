@@ -28,6 +28,8 @@ int exhaustiveColoring(Graph &g, int numColors, int t);
 void printSolution(Graph &g, int numConflicts);
 int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor);
 int calculateNumConflicts(Graph &g);
+void binaryCounter(int k);
+void convertToBaseK(int num, vector<int> &bin, int k);
 //void computeVertexDegrees(Graph &g);
 //void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
 
@@ -140,6 +142,25 @@ void printSolution(Graph &g, int numConflicts)//, string filePath_output)
     //myfile.close();
 }
 
+void convertToBaseK(int num, vector <int> &bin, int k) // Converts num to base-k representation, stores each digit in bin
+    if (num < k)
+    {
+        bin.push_back(num);
+    }
+    else
+    {
+        convertToBaseK(num/k, bin, k);
+        bin.push_back(num%k);
+
+    }
+}
+
+void binaryCounter(int k) // Increments binary number stored in vector bin
+{
+    //int bin = int('10', k);
+    //cout << bin << endl;
+}
+
 int main()
 {
     char x;
@@ -175,14 +196,18 @@ int main()
         cout << "Num edges: " << num_edges(g) << endl;
         cout << endl;
 
-        pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+        int num = 15;
+        int k = 3;
+        vector <int> bin;
+        bin.resize(0);
+        convertToBaseK(num, bin, 3);
+        cout << "base-" << k << " representation of " << num << " is: " << endl;
+        for (int i = 0; i < bin.size(); i++)
         {
-            g[*vItr].color = 0;
+            cout << bin.at(i) << " ";
         }
-
-        numConflicts = calculateNumConflicts(g);
-        cout << "there are " << numConflicts << " conflicts" << endl;
+        cout << endl;
+        //binaryCounter(2);
 
         // cout << g;
         
