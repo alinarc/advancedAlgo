@@ -108,19 +108,9 @@ int exhaustiveColoring(Graph &g, int numColors, int t)
     clock_t startTime = clock();
 
     int size = num_vertices(g);
-    unsigned long long int max = 0;
     int minConflicts = LargeValue;
-    unsigned long long int numberForMin;
-
-
-    for(int i = 0; i < size; i++) // Calculates the maximum integer that will correspond to a coloring
-    {
-        max = max + (numColors-1)*pow(numColors, i);
-        cout << "max is " << max << endl;
-    }
     
 
-    vector <int> bin;
     for (unsigned long long int count = 0; count <= max; count++) // Iterates through all possible colorings
     {
         int diff = clock() - startTime;
