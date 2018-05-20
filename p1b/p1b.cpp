@@ -54,6 +54,7 @@ struct EdgeProperties
 
 int main()
 {
+    int test;
     char x;
     ifstream fin;
     string fileName;
