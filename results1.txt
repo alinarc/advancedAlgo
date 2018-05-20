@@ -6,3 +6,7 @@ variations were not yielding any results if cut off by the 600 second time limit
 the point where the team had initially checked the combinations of maximum size and worked our way down. It was discovered 
 that with the larger sized variations, no combination was discovered in time that satisfied the cost requirement, returning
 an empty vector; this was solved by reversing the order and beginning with combinations of size 1 and working our way up.
+Additionally while working with graph coloring another issue of a variable of immense size arose when trying to increment through
+every variation of colorings. Instead of going through a massive forloop we ended up creating a method that incremented 
+in base K through all options adding one to the first bit every time and then seperately checking to see if any bit (starting
+at the first) was equal to the base number and if so setting it to 0 and adding one to the bit next to it. 
