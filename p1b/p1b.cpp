@@ -24,6 +24,7 @@ typedef Graph::edge_iterator edge_iterator;
 typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
+void initializeGraph(Graph &g, ifstream &fin)
 int exhaustiveColoring(Graph &g, int numColors, int t);
 void printSolution(Graph &g, int numConflicts);
 int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor);
@@ -51,115 +52,6 @@ struct EdgeProperties
     bool visited;
     bool marked;
 };
-
-void initializeGraph(Graph &g, ifstream &fin)
-// Initialize g using data from fin.
-{
-    int n, e;
-    int j,k;
-    
-    fin >> n >> e;
-    Graph::vertex_descriptor v;
-    
-    // Add nodes.
-    for (int i = 0; i < n; i++)
-        v = add_vertex(g);
-    
-    for (int i = 0; i < e; i++)
-    {
-        fin >> j >> k;
-        add_edge(j,k,g);  // Assumes vertex list is type vecS
-        //add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
-    }
-    //computeVertexDegrees(g);
-}
-
-/* void computeVertexDegrees(Graph &g)
-{
-    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        int count = 0;
-        pair <adj_iterator, adj_iterator> adjItrRange = adjacent_vertices(*vItr, g);
-        for (adj_iterator adjItr = adjItrRange.first; adjItr != adjItrRange.second; ++adjItr)
-        {
-            count = count + 1;
-        } 
-        g[*vItr].degree = count;
-    }
-}
-*/
-
-/* void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
-{
-    //nodes.resize(num_vertices(g));
-    int currMax;
-    
-    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        if (g[*vItr].degree > currMax)
-        {
-            currMax = g[*vItr].degree;
-        }
-    }
-
-    for (int deg = currMax; deg >= 0; deg--)
-    {
-        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-        {
-            if (g[*vItr].degree == deg)
-            {
-                nodes.push_back(*vItr);
-            }
-        }
-    }
-} */
-
-void setNodeWeights(Graph &g, int w)
-// Set all node weights to w.
-{
-    pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
-    
-    for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        g[*vItr].weight = w;
-    }
-}
-
-void printSolution(Graph &g, int numConflicts)//, string filePath_output)
-{
-    //ofstream myfile;
-
-    //myfile.open(filePath_output.c_str());
-
-    cout << "Total Conflicts: " << numConflicts << endl;
-
-    for (int counter = 0; counter < num_vertices(g); counter++)
-    {
-        cout << counter << ": " << g[counter].color << endl;
-    }
-    //myfile.close();
-}
-
-void convertToBaseK(int num, vector <int> &bin, int k) // Converts num to base-k representation, stores each digit in bin
-    if (num < k)
-    {
-        bin.push_back(num);
-    }
-    else
-    {
-        convertToBaseK(num/k, bin, k);
-        bin.push_back(num%k);
-
-    }
-}
-
-void binaryCounter(int k) // Increments binary number stored in vector bin
-{
-    //int bin = int('10', k);
-    //cout << bin << endl;
-}
 
 int main()
 {
@@ -225,6 +117,112 @@ int main()
     }
 }
 
+void initializeGraph(Graph &g, ifstream &fin)
+// Initialize g using data from fin.
+{
+    int n, e;
+    int j,k;
+    
+    fin >> n >> e;
+    Graph::vertex_descriptor v;
+    
+    // Add nodes.
+    for (int i = 0; i < n; i++)
+        v = add_vertex(g);
+    
+    for (int i = 0; i < e; i++)
+    {
+        fin >> j >> k;
+        add_edge(j,k,g);  // Assumes vertex list is type vecS
+        //add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
+    }
+    //computeVertexDegrees(g);
+}
+
+/* void computeVertexDegrees(Graph &g)
+{
+    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+    {
+        int count = 0;
+        pair <adj_iterator, adj_iterator> adjItrRange = adjacent_vertices(*vItr, g);
+        for (adj_iterator adjItr = adjItrRange.first; adjItr != adjItrRange.second; ++adjItr)
+        {
+            count = count + 1;
+        } 
+        g[*vItr].degree = count;
+    }
+}
+*/
+
+/* void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
+{
+    //nodes.resize(num_vertices(g));
+    int currMax;
+    
+    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+    {
+        if (g[*vItr].degree > currMax)
+        {
+            currMax = g[*vItr].degree;
+        }
+    }
+
+    for (int deg = currMax; deg >= 0; deg--)
+    {
+        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+        {
+            if (g[*vItr].degree == deg)
+            {
+                nodes.push_back(*vItr);
+            }
+        }
+    }
+} */
+
+void setNodeWeights(Graph &g, vector <int> colors, int w)
+// Set all node weights to w.
+{
+    pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
+    
+    for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
+    {
+        g[*vItr].weight = w;
+    }
+}
+
+void printSolution(Graph &g, int numConflicts)//, string filePath_output)
+{
+    //ofstream myfile;
+
+    //myfile.open(filePath_output.c_str());
+
+    cout << "Total Conflicts: " << numConflicts << endl;
+
+    for (int counter = 0; counter < num_vertices(g); counter++)
+    {
+        cout << counter << ": " << g[counter].color << endl;
+    }
+    //myfile.close();
+}
+
+void convertToBaseK(int num, vector <int> &bin, int k) // Converts num to base-k representation, stores each digit in bin
+{
+    if (num < k)
+    {
+        bin.push_back(num);
+    }
+    else
+    {
+        convertToBaseK(num/k, bin, k);
+        bin.push_back(num%k);
+
+    }
+}
+
+
+
 int calculateNumConflicts(Graph &g)
 {
     int numConflicts = 0;
@@ -241,11 +239,6 @@ int calculateNumConflicts(Graph &g)
 }
 
 int exhaustiveColoring(Graph &g, int numColors, int t)
-{
-    
-}
-
-int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor)
 {
 
 }
