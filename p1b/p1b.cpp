@@ -1,9 +1,12 @@
 // Code to read graph instances from a file.  Uses the Boost Graph Library (BGL).
 
 #include <iostream>
+#include <string>
 #include <limits.h>
-#include "d_except.h"
+
 #include <fstream>
+#include <time.h>
+#include "d_except.h"
 
 #include <boost/graph/adjacency_list.hpp>
 
@@ -26,12 +29,10 @@ typedef Graph::adjacency_iterator adj_iterator;
 
 int exhaustiveColoring(Graph &g, int numColors, int t);
 void initializeGraph(Graph &g, ifstream &fin);
-void setNodeWeights(Graph &g, vector <int> colors, int w);
-void printSolution(Graph &g, int numConflicts);
+void setNodeWeights(Graph &g, vector <int> colors);
+void printSolution(Graph &g, int numConflicts, int numColors);
 int calculateNumConflicts(Graph &g);
 void convertToBaseK(int num, vector<int> &bin, int k);
-//void computeVertexDegrees(Graph &g);
-//void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
 
 struct VertexProperties
 {
@@ -41,7 +42,6 @@ struct VertexProperties
     bool marked;
     int weight;
     int color;
-    //int degree;
 };
 
 // Create a struct to hold properties for each edge
@@ -61,7 +61,7 @@ int main()
     // Read the name of the graph from the keyboard or
     // hard code it here for testing.
     
-    fileName = "color/colortest.input";
+    fileName = "color/color48-5.input";
     
     //   cout << "Enter filename" << endl;
     //   cin >> fileName;
@@ -80,30 +80,15 @@ int main()
         int numColors;
         int numConflicts = -1;
         fin >> numColors;
+        cout << "Num colors: " << numColors << endl;
         initializeGraph(g,fin);
-
         
         cout << "Num nodes: " << num_vertices(g) << endl;
         cout << "Num edges: " << num_edges(g) << endl;
         cout << endl;
-
-        int num = 15;
-        int k = 3;
-        vector <int> bin;
-        bin.resize(0);
-        convertToBaseK(num, bin, 3);
-        cout << "base-" << k << " representation of " << num << " is: " << endl;
-        for (int i = 0; i < bin.size(); i++)
-        {
-            cout << bin.at(i) << " ";
-        }
-        cout << endl;
-        //binaryCounter(2);
-
-        // cout << g;
         
-        //numConflicts = exhaustiveColoring(g, numColors, 600);
-        //printSolution(g, numConflicts);
+        numConflicts = exhaustiveColoring(g, numColors, 600);
+        printSolution(g, numConflicts, numColors);
         
     }
     catch (indexRangeError &ex)
@@ -117,7 +102,53 @@ int main()
 }
 
 int exhaustiveColoring(Graph &g, int numColors, int t)
+// Function that iterates through all possible coloring assignments by using the fact that an integer can represent a coloring of size k by converting the integer to base-k representation. By iterating from 0 to 'kkkk' (for a graph with 4 vertices, for example), we iterate through all possible vertex colorings. We then calculate the number for conflicts for each one and store the minimum.
 {
+    clock_t startTime = clock();
+
+    int size = num_vertices(g);
+    unsigned long long int max = 0;
+    int minConflicts = LargeValue;
+    unsigned long long int numberForMin;
+
+
+    for(int i = 0; i < size; i++) // Calculates the maximum integer that will correspond to a coloring
+    {
+        max = max + (numColors-1)*pow(numColors, i);
+        cout << "max is " << max << endl;
+    }
+    
+
+    vector <int> bin;
+    for (unsigned long long int count = 0; count <= max; count++) // Iterates through all possible colorings
+    {
+        int diff = clock() - startTime;
+        int runTime = diff / CLOCKS_PER_SEC;
+        if (runTime <= t) // Checks that runTime is less than the time limit
+        {
+            bin.clear();
+            convertToBaseK(count, bin, numColors);
+            setNodeWeights(g, bin);
+            int numConflicts = calculateNumConflicts(g);
+
+            if (numConflicts < minConflicts) // Store minimum num conflicts and the integer that corresponds to it
+            {
+                minConflicts = numConflicts;
+                numberForMin = count;
+            }
+        }
+        else // Breaks loop if runTime has exceeded time limit
+        {   
+            cout << "time is " << runTime << endl;
+            break;
+        }
+    }
+
+    bin.clear();
+    convertToBaseK(numberForMin, bin, numColors); // Assigns the graph the coloring that gives the minimum number of conflicts
+    setNodeWeights(g, bin);
+    minConflicts = calculateNumConflicts(g);
+    return minConflicts;
 
 }
 
@@ -138,80 +169,49 @@ void initializeGraph(Graph &g, ifstream &fin)
     {
         fin >> j >> k;
         add_edge(j,k,g);  // Assumes vertex list is type vecS
-        //add_edge(k, j, g); // Added this to correctly comput the degree of each vertex. Not sure why its necessary, since the graph is biDirectional. May be unneccessary or there may be a better way
-    }
-    //computeVertexDegrees(g);
-}
-
-/* void computeVertexDegrees(Graph &g)
-{
-    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        int count = 0;
-        pair <adj_iterator, adj_iterator> adjItrRange = adjacent_vertices(*vItr, g);
-        for (adj_iterator adjItr = adjItrRange.first; adjItr != adjItrRange.second; ++adjItr)
-        {
-            count = count + 1;
-        } 
-        g[*vItr].degree = count;
     }
 }
-*/
 
-/* void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes)
+
+void setNodeWeights(Graph &g, vector <int> colors)
+// Set node weights to the values specified in the vector colors
 {
-    //nodes.resize(num_vertices(g));
-    int currMax;
-    
-    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+    int n = num_vertices(g);
+
+    for (int i = 0; i < n; i++)
     {
-        if (g[*vItr].degree > currMax)
+        if (i < colors.size())
         {
-            currMax = g[*vItr].degree;
+            g[i].color = colors.at(i);
+        }
+        else
+        {
+            g[i].color = 0;
         }
     }
-
-    for (int deg = currMax; deg >= 0; deg--)
-    {
-        for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-        {
-            if (g[*vItr].degree == deg)
-            {
-                nodes.push_back(*vItr);
-            }
-        }
-    }
-} */
-
-void setNodeWeights(Graph &g, vector <int> colors, int w)
-// Set all node weights to w.
-{
-    pair<Graph::vertex_iterator, Graph::vertex_iterator> vItrRange = vertices(g);
-    
-    for (Graph::vertex_iterator vItr= vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        g[*vItr].weight = w;
-    }
 }
 
-void printSolution(Graph &g, int numConflicts)//, string filePath_output)
+void printSolution(Graph &g, int numConflicts, int numColors)
+// Print coloring solution as well as write it to an output file
 {
-    //ofstream myfile;
-
-    //myfile.open(filePath_output.c_str());
-
+    ofstream myfile;
+    int size = num_vertices(g);
+    myfile.open("outputs/color"+to_string(num_vertices(g))+"-"+to_string(numColors)+".output");
+    
+    
     cout << "Total Conflicts: " << numConflicts << endl;
+    myfile << "Total Conflicts: " << numConflicts << endl;
 
     for (int counter = 0; counter < num_vertices(g); counter++)
     {
         cout << counter << ": " << g[counter].color << endl;
+        myfile << counter << ": " << g[counter].color << endl;
     }
-    //myfile.close();
+    myfile.close();
 }
 
-void convertToBaseK(int num, vector <int> &bin, int k) // Converts num to base-k representation, stores each digit in bin
+void convertToBaseK(int num, vector <int> &bin, int k) 
+// Convert num to base-k representation, stores each digit in bin
 {
     if (num < k)
     {
@@ -221,13 +221,11 @@ void convertToBaseK(int num, vector <int> &bin, int k) // Converts num to base-k
     {
         convertToBaseK(num/k, bin, k);
         bin.push_back(num%k);
-
     }
 }
 
-
-
 int calculateNumConflicts(Graph &g)
+// Calculate the number of conflicts in Graph g
 {
     int numConflicts = 0;
 
