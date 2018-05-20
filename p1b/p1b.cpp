@@ -33,6 +33,7 @@ void setNodeWeights(Graph &g, vector <int> colors);
 void printSolution(Graph &g, int numConflicts, int numColors);
 int calculateNumConflicts(Graph &g);
 void convertToBaseK(int num, vector<int> &bin, int k);
+void binaryIncrement(int numColors, vector<int> &basedVector)
 int sumOfVectorElements(vector <int> v);
 
 struct VertexProperties
