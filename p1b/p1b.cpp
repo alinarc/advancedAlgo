@@ -24,12 +24,11 @@ typedef Graph::edge_iterator edge_iterator;
 typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
-void initializeGraph(Graph &g, ifstream &fin)
 int exhaustiveColoring(Graph &g, int numColors, int t);
+void initializeGraph(Graph &g, ifstream &fin);
+void setNodeWeights(Graph &g, vector <int> colors, int w);
 void printSolution(Graph &g, int numConflicts);
-int exhaustiveColoringUtil(Graph &g, int numColors, int t, vector <Vertex> &sortedNodes, vector <Vertex> &uncolored, int currColor);
 int calculateNumConflicts(Graph &g);
-void binaryCounter(int k);
 void convertToBaseK(int num, vector<int> &bin, int k);
 //void computeVertexDegrees(Graph &g);
 //void sortVerticesByDegree(Graph &g, vector <Vertex> &nodes);
@@ -115,6 +114,11 @@ int main()
     {
         cout << ex.what() << endl; exit(1);
     }
+}
+
+int exhaustiveColoring(Graph &g, int numColors, int t)
+{
+
 }
 
 void initializeGraph(Graph &g, ifstream &fin)
@@ -238,7 +242,3 @@ int calculateNumConflicts(Graph &g)
     return numConflicts;
 }
 
-int exhaustiveColoring(Graph &g, int numColors, int t)
-{
-
-}
