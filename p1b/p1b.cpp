@@ -33,6 +33,7 @@ void setNodeWeights(Graph &g, vector <int> colors);
 void printSolution(Graph &g, int numConflicts, int numColors);
 int calculateNumConflicts(Graph &g);
 void convertToBaseK(int num, vector<int> &bin, int k);
+int sumOfVectorElements(vector <int> v);
 
 struct VertexProperties
 {
@@ -109,9 +110,14 @@ int exhaustiveColoring(Graph &g, int numColors, int t)
 
     int size = num_vertices(g);
     int minConflicts = LargeValue;
-    
+    int maxSum = (numColors - 1) * size;
+    vector <int> colors;
+    for (int i = 0; i < size; i++)
+    {
+        colors.push_back(0);
+    }
 
-    for (unsigned long long int count = 0; count <= max; count++) // Iterates through all possible colorings
+    while (sumOfVectorElements(colors) < maxSum)
     {
         int diff = clock() - startTime;
         int runTime = diff / CLOCKS_PER_SEC;
@@ -231,3 +237,11 @@ int calculateNumConflicts(Graph &g)
     return numConflicts;
 }
 
+int sumOfVectorElements(vector <int> v)
+{
+    int sum = 0;
+    for (int i = 0; i < v.size(); i++)
+    {
+        sum += v.at(i);
+    }
+}
