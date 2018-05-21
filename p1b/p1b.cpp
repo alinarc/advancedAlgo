@@ -33,7 +33,7 @@ void setNodeWeights(Graph &g, vector <int> colors);
 void printSolution(Graph &g, int numConflicts, int numColors);
 int calculateNumConflicts(Graph &g);
 void convertToBaseK(int num, vector<int> &bin, int k);
-void binaryIncrement(int numColors, vector<int> &basedVector)
+void binaryIncrement(int numColors, vector<int> &basedVector);
 int sumOfVectorElements(vector <int> v);
 
 struct VertexProperties
@@ -74,7 +74,7 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color/color48-5.input";
+	fileName = "color/color192-8.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
@@ -119,31 +119,30 @@ int exhaustiveColoring(Graph &g, int numColors, int t)
 {
     clock_t startTime = clock();
 
-    int size
-    ces(g);
+    int size = num_vertices(g);
     int minConflicts = LargeValue;
     int maxSum = (numColors - 1) * size;
-    vector <int> colors;
-    for (int i = 0; i < size; i++)
-    {
-        colors.push_back(0);
-    }
 
+    vector <int> vectorForMin(size);
+    vector <int> colors(5, 0);
+    
     while (sumOfVectorElements(colors) < maxSum)
     {
         int diff = clock() - startTime;
         int runTime = diff / CLOCKS_PER_SEC;
         if (runTime <= t) // Checks that runTime is less than the time limit
         {
-            bin.clear();
-            convertToBaseK(count, bin, numColors);
-            setNodeWeights(g, bin);
+            binaryIncrement(numColors, colors);
+            setNodeWeights(g, colors);
             int numConflicts = calculateNumConflicts(g);
 
             if (numConflicts < minConflicts) // Store minimum num conflicts and the integer that corresponds to it
             {
                 minConflicts = numConflicts;
-                numberForMin = count;
+                for (int i = 0; i < size; i++)
+                {
+                    vectorForMin.at(i) = colors.at(i);
+                }
             }
         }
         else // Breaks loop if runTime has exceeded time limit
@@ -153,9 +152,7 @@ int exhaustiveColoring(Graph &g, int numColors, int t)
         }
     }
 
-    bin.clear();
-    convertToBaseK(numberForMin, bin, numColors); // Assigns the graph the coloring that gives the minimum number of conflicts
-    setNodeWeights(g, bin);
+    setNodeWeights(g, vectorForMin);
     minConflicts = calculateNumConflicts(g);
     return minConflicts;
 
@@ -270,4 +267,6 @@ int sumOfVectorElements(vector <int> v)
     {
         sum += v.at(i);
     }
+    //cout << "sum of elements is "<< sum << endl;
+    return sum;
 }
