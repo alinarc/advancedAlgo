@@ -21,9 +21,12 @@ class knapsack
    private:
       int numObjects;
       int costLimit;
-      vector<int> value;
-      vector<int> cost;
+      vector<float> index;
+      vector<float> value;
+      vector<float> cost;
+      vector<float> ratio;
       vector<bool> selected;
+      matrix<float> data;
       int totalValue;
       int totalCost;
 };
@@ -31,7 +34,8 @@ class knapsack
 knapsack::knapsack(ifstream &fin)
 // Construct a new knapsack instance using the data in fin.
 {
-   int n, b, j, v, c;
+   int n, b, j;
+   float v, c;
    
    fin >> n;  // read the number of objects
    fin >> b;  // read the cost limit
@@ -39,18 +43,27 @@ knapsack::knapsack(ifstream &fin)
    numObjects = n;
    costLimit = b;
    
+   index.resize(n);
    value.resize(n);
    cost.resize(n);
+   ratio.resize(n);
    selected.resize(n);
    
    for (int i = 0; i < n; i++)
    {
       fin >> j >> v >> c;
+      index[j] = j;
       value[j] = v;
       cost[j] = c;
+      float rat = v / c;
+      ratio[j] = v / c;
+      cout << "ratio for item " << j << " is " << rat << endl;
       unSelect(j);
    }
 
+   data.populateWithVectors(index, value, cost, ratio);
+   data.sortByRatio();
+   cout << data << endl;
    totalValue = 0;
    totalCost = 0;
 }

@@ -17,10 +17,11 @@ using namespace std;
 #include "d_matrix.h"
 #include "knapsack.h"
 
-void exhaustiveKnapsack(knapsack &k, const int &t);
+void greedyKnapsack(knapsack &k, const int &t);
+/* void exhaustiveKnapsack(knapsack &k, const int &t);
 void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs, const int &t, const clock_t &startTime);
 void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb, const int &t, const clock_t &startTime);
-
+ */
 int main()
 {
    char x;
@@ -32,7 +33,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack1024.input";
+   fileName = "knapsack/knapsack8.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -51,7 +52,7 @@ int main()
 
       cout << k << endl;
 
-      exhaustiveKnapsack(k,  600);
+      //exhaustiveKnapsack(k,  600);
 
       cout << endl << "Best solution" << endl;
       k.printSolution();
@@ -68,6 +69,17 @@ int main()
    }
 }
 
+void greedyKnapsack(knapsack &k, const int &t)
+{
+    int i = 0;
+    while (k.getCost()+k.getCost(k.data[i][0]) < k.getCostLimit())
+    {
+        
+
+    }
+}
+
+/*
 void exhaustiveKnapsack(knapsack &k, const int &t)
 // Pass-through function that calls utility functions to generate and evaluate all combinations
 {
@@ -141,4 +153,5 @@ void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, 
     }
     else return;
 }
+*/
 
