@@ -17,6 +17,7 @@ class knapsack
       void unSelect(int);
       bool isSelected(int) const;
       void unSelectAll();
+      vector <float> getVector(int i);
 
    private:
       int numObjects;
@@ -61,7 +62,7 @@ knapsack::knapsack(ifstream &fin)
       unSelect(j);
    }
 
-   data.populateWithVectors(index, value, cost, ratio);
+   data.populateWithVectors(index, ratio);
    data.sortByRatio();
    cout << data << endl;
    totalValue = 0;
@@ -177,7 +178,7 @@ void knapsack::printSolution()
 
    ofstream outputFile;
    numObjects = getNumObjects();
-   outputFile.open("outputs/knapsack"+to_string(numObjects)+".output");
+   outputFile.open("output/knapsack"+to_string(numObjects)+".output");
    outputFile << "Total value: " << getValue() << endl;
    outputFile << "Total cost: " << getCost() << endl << endl;
    for (int i = 0; i < getNumObjects(); i++)
@@ -246,4 +247,9 @@ void knapsack::unSelectAll()
             if (isSelected(i))
                   unSelect(i);
       }
+}
+
+vector <float> knapsack::getVector(int i)
+{
+      return data[i];
 }

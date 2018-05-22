@@ -18,10 +18,7 @@ using namespace std;
 #include "knapsack.h"
 
 void greedyKnapsack(knapsack &k, const int &t);
-/* void exhaustiveKnapsack(knapsack &k, const int &t);
-void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs, const int &t, const clock_t &startTime);
-void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb, const int &t, const clock_t &startTime);
- */
+
 int main()
 {
    char x;
@@ -33,7 +30,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack8.input";
+   fileName = "knapsack/knapsack1024.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -52,7 +49,7 @@ int main()
 
       cout << k << endl;
 
-      //exhaustiveKnapsack(k,  600);
+      greedyKnapsack(k, 600);
 
       cout << endl << "Best solution" << endl;
       k.printSolution();
@@ -71,87 +68,23 @@ int main()
 
 void greedyKnapsack(knapsack &k, const int &t)
 {
+    clock_t startTime = clock();
     int i = 0;
-    while (k.getCost()+k.getCost(k.data[i][0]) < k.getCostLimit())
+    while (k.getCost()+k.getCost(k.getVector(i).at(0)) < k.getCostLimit() && i < k.getNumObjects())
     {
-        
+        int diff = clock() - startTime;
+        int runTime = diff / CLOCKS_PER_SEC;
 
-    }
-}
-
-/*
-void exhaustiveKnapsack(knapsack &k, const int &t)
-// Pass-through function that calls utility functions to generate and evaluate all combinations
-{
-    const clock_t startTime = clock();
-
-    int n = k.getNumObjects() - 1;
-
-    vector <int> items;
-    for (int i = 0; i <= n; i++)
-    {
-        items.push_back(i);
-    }
-
-    vector <int> comb;
-
-    generateAllCombinations(k, 0, n, 0, items, comb, t, startTime);
-}
-
-void generateAllCombinations(knapsack &k, int start, int &end, int index, vector <int> &items, vector <int> &combs, const int &t, const clock_t &startTime)
-// Calls generateRCombinations in a for loop to generate all combinations from size 0 up to n (number of items)
-{
-
-    for (int r = 0; r < end+1; r++)
-    {
-        combs.clear();
-        combs.resize(r);
-  
-        generateRcombinations(k, r, start, end, index, items, combs, t, startTime);
-
-    }
-}
-
-void generateRcombinations(knapsack &k, int &r, int start, int &end, int index, vector <int> &items, vector <int> &comb, const int &t, const clock_t &startTime)
-// Recursive function to generate all combinations of size r of (end - start) items, which are stored in the items vector. These combinations are stored in the vector comb, one at a time, and the value and cost of each combination is evaluated. Value and cost of k, the optimal knapsack, is updated accordingly.
-{
-    int diff = clock() - startTime;
-    int runTime = diff / CLOCKS_PER_SEC;
-
-    if (runTime <= t) // Checks that runTime has not exceeded time limit
-    {    
-        if (index == r) // Combination of size r is ready to be evaluated
+        if (runTime <= t)
         {
-            int cost = 0;
-            int value = 0;
-
-            for (int i = 0; i < r; i++) // Evaluate cost of combination
-            {
-                cost = cost + k.getCost(comb.at(i));
-            }
-            for (int i = 0; i < r; i++) // Evaluate value of combination
-            {
-                value = value + k.getValue(comb.at(i));
-            }
-            if (cost <= k.getCostLimit() && value > k.getValue()) // If new knapsack has higher value and meets cost restraint
-            {
-                k.unSelectAll();
-
-                for (int i = 0; i < r; i++) // Select combination of items
-                {
-                    k.select(comb.at(i));
-                }
-            }
-            return;
+            //cout << "evaluating item " << k.getVector(i).at(0) << endl;
+            k.select(k.getVector(i).at(0));
+            i+=1;
         }
-
-        for (int i = start; i <= end && end-i+1 >= r-index; i++) // Triggers recursion
+        else
         {
-            comb.at(index) = items.at(i);
-            generateRcombinations(k, r, i+1, end, index+1, items, comb, t, startTime);
-        }   
+            cout << "time is " << runTime << endl;
+            break;
+        }
     }
-    else return;
 }
-*/
-

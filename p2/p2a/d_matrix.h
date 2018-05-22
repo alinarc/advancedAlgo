@@ -19,7 +19,7 @@ class matrix
 
 		//matrix(vector <T> index, vector <T> cost, vector <T> value, vector <T> ratio);
 
-		void populateWithVectors(vector <T> index, vector <T> cost, vector <T> value, vector <T> ratio);
+		void populateWithVectors(vector <T> index, vector <T> ratio);
 
 		vector<T>& operator[] (int i);
 			// index operator.
@@ -32,21 +32,20 @@ class matrix
 		const vector<T>& operator[](int i) const;
 			// version for constant objects
 
-      int rows() const;
+      	int rows() const;
 			// return number of rows
-      int cols() const;
-			// return number of columns
+		int cols() const;
+				// return number of columns
 
-	  void resize(int numRows, int numCols);
-	  	// modify the matrix size.
-			// Postcondition: the matrix has size numRows x numCols.
-			// any new elements are filled with the default value of type T
-	
-	  void swap(int i1, int i2);
+		void resize(int numRows, int numCols);
+			// modify the matrix size.
+				// Postcondition: the matrix has size numRows x numCols.
+				// any new elements are filled with the default value of type T
+		
+		void swap(int i1, int i2);
 
-	  void sortByRatio();
+		void sortByRatio();
 			
-
 	private:
       int nRows, nCols;
 			// number of rows and columns
@@ -63,15 +62,13 @@ matrix<T>::matrix(int numRows, int numCols, const T& initVal):
 {}
 
 template <typename T>
-void matrix<T>::populateWithVectors(vector <T> index, vector <T> cost, vector <T> value, vector <T> ratio)
+void matrix<T>::populateWithVectors(vector <T> index, vector <T> ratio)
 {
-	resize(index.size(), 4);
+	resize(index.size(), 2);
 	for(int i = 0; i < rows(); i++)
 	{
 		mat[i][0] = index.at(i);
-		mat[i][1] = cost.at(i);
-		mat[i][2] = value.at(i);
-		mat[i][3] = ratio.at(i);
+		mat[i][1] = ratio.at(i);
 	}
 }	
 
@@ -156,8 +153,6 @@ void matrix<T>::swap(int i1, int i2)
 template <typename T>
 void matrix<T>::sortByRatio()
 {
-	cout << "Data sorted by ratio of value to cost: " << endl;
-	cout << "index value cost ratio" << endl;
 	int i, j, iMax;
 
 	for (i = 0; i < rows() - 1; i++)
@@ -166,7 +161,7 @@ void matrix<T>::sortByRatio()
 		iMax = i;
 		for (j = i+1; j < rows(); j++)
 		{
-			if (mat[j][3] > mat[iMax][3])
+			if (mat[j][1] > mat[iMax][1])
 				iMax = j;
 		}
 		swap(iMax, i);
