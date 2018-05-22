@@ -1,9 +1,9 @@
-// Code to read graph instances from a file.  Uses the Boost Graph Library (BGL).
+// Project 1b: Graph coloring using exhaustive algorithm
+// Alina Rossi-Conaway & Alexander Duffy
 
 #include <iostream>
 #include <string>
 #include <limits.h>
-
 #include <fstream>
 #include <time.h>
 #include "d_except.h"
@@ -27,14 +27,13 @@ typedef Graph::edge_iterator edge_iterator;
 typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
-int exhaustiveColoring(Graph &g, int numColors, int t);
 void initializeGraph(Graph &g, ifstream &fin);
-void setNodeWeights(Graph &g, vector <int> colors);
-void printSolution(Graph &g, int numConflicts, int numColors);
-int calculateNumConflicts(Graph &g);
-void convertToBaseK(int num, vector<int> &bin, int k);
-void binaryIncrement(int numColors, vector<int> &basedVector);
+int exhaustiveColoring(Graph &g, int numColors, int t);
 int sumOfVectorElements(vector <int> v);
+void setNodeWeights(Graph &g, vector <int> colors);
+int calculateNumConflicts(Graph &g);
+void baseKIncrement(int numColors, vector<int> &v);
+void printSolution(Graph &g, int numConflicts, int numColors);
 
 struct VertexProperties
 {
@@ -56,17 +55,6 @@ struct EdgeProperties
 
 int main()
 {
-	/*vector<int> testV (5,0);
-	for (int j = 0; j < 20; j++)
-	{
-		binaryIncrement(3, testV);
-		for (int i = 0; i < 5; i++)
-		{
-			cout << testV.at(i);
-		}
-		cout << endl;
-	}*/
-
 	char x;
 	ifstream fin;
 	string fileName;
@@ -74,7 +62,7 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color/color192-8.input";
+	fileName = "color/color24-5.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
@@ -114,64 +102,6 @@ int main()
 	}
 }
 
-int exhaustiveColoring(Graph &g, int numColors, int t)
-// Function that iterates through all possible coloring assignments by using the fact that an integer can represent a coloring of size k by converting the integer to base-k representation. By iterating from 0 to 'kkkk' (for a graph with 4 vertices, for example), we iterate through all possible vertex colorings. We then calculate the number for conflicts for each one and store the minimum.
-{
-    clock_t startTime = clock();
-
-    int size = num_vertices(g);
-    int minConflicts = LargeValue;
-    int maxSum = (numColors - 1) * size;
-
-    vector <int> vectorForMin(size);
-    vector <int> colors(5, 0);
-    
-    while (sumOfVectorElements(colors) < maxSum)
-    {
-        int diff = clock() - startTime;
-        int runTime = diff / CLOCKS_PER_SEC;
-        if (runTime <= t) // Checks that runTime is less than the time limit
-        {
-            binaryIncrement(numColors, colors);
-            setNodeWeights(g, colors);
-            int numConflicts = calculateNumConflicts(g);
-
-            if (numConflicts < minConflicts) // Store minimum num conflicts and the integer that corresponds to it
-            {
-                minConflicts = numConflicts;
-                for (int i = 0; i < size; i++)
-                {
-                    vectorForMin.at(i) = colors.at(i);
-                }
-            }
-        }
-        else // Breaks loop if runTime has exceeded time limit
-        {   
-            cout << "time is " << runTime << endl;
-            break;
-        }
-    }
-
-    setNodeWeights(g, vectorForMin);
-    minConflicts = calculateNumConflicts(g);
-    return minConflicts;
-
-}
-void binaryIncrement(int numColors, vector<int> &basedVector)
-{
-	int lengthVector;
-	lengthVector = basedVector.size();
-	basedVector.at(0) = basedVector.at(0) + 1;
-	for (int i = 0; i < lengthVector; i++)
-	{
-		if (basedVector.at(i) == numColors)
-		{
-			basedVector.at(i) = 0;
-			basedVector.at(i + 1) = basedVector.at(i + 1) + 1;
-		}
-
-	}
-}
 void initializeGraph(Graph &g, ifstream &fin)
 // Initialize g using data from fin.
 {
@@ -192,9 +122,85 @@ void initializeGraph(Graph &g, ifstream &fin)
 	}
 }
 
+int exhaustiveColoring(Graph &g, int numColors, int t)
+/* 
+    Iterates through all possible colorings by using the fact that an 
+    integer can represent a coloring of size k by converting the integer to 
+    base-k representation. Starts from 0 and repeatedly calls the function 
+    baseKIncrement to increment the base-k number stored in vector 'colors', 
+    thus coming up with a new coloring. Calls calculateNumConflicts for each 
+    assignment, and stores the minimum number of conflicts.
+*/
+{
+    clock_t startTime = clock();
+
+    int size = num_vertices(g);
+    int minConflicts = LargeValue;
+    int maxSum = (numColors - 1) * size; // Maximum sum of elements in vector 'colors'
+
+
+    vector <int> colors(size, 0); // Will store each coloring assignment
+    vector <int> vectorForMin(size); // Will store coloring assignment with minimum conflicts
+
+    while (sumOfVectorElements(colors) < maxSum) // While we still have legal colorings to evaluate
+    {
+        int diff = clock() - startTime;
+        int runTime = diff / CLOCKS_PER_SEC;
+        if (runTime <= t) // Checks that runTime is less than the time limit
+        {
+            setNodeWeights(g, colors);
+            int numConflicts = calculateNumConflicts(g);
+
+            if (numConflicts < minConflicts) // Store minimum num conflicts and the vector that corresponds to it
+            {
+                minConflicts = numConflicts;
+                for (int i = 0; i < size; i++)
+                {
+                    vectorForMin.at(i) = colors.at(i);
+                }
+            }
+            baseKIncrement(numColors, colors);
+        }
+        else break; // Breaks loop if runTime has exceeded time limit
+    }
+
+    setNodeWeights(g, vectorForMin); // Assign coloring with minimum weight
+    minConflicts = calculateNumConflicts(g);
+    return minConflicts;
+}
+
+int sumOfVectorElements(vector <int> v)
+// Sum the contents of vector 'v'
+{
+    int sum = 0;
+    for (int i = 0; i < v.size(); i++)
+    {
+        sum += v.at(i);
+    }
+    return sum;
+}
+
+void baseKIncrement(int numColors, vector<int> &v)
+/*
+    Takes in a vector whose components represent a coloring assigment (i.e. an 
+    integer in base-k representation) where k = numColors, and increments it to 
+    generate a new coloring assignment
+*/
+{
+	int size= v.size();
+	v.at(0) = v.at(0) + 1;
+	for (int i = 0; i < size; i++)
+	{
+		if (v.at(i) == numColors)
+		{
+			v.at(i) = 0;
+			v.at(i + 1) = v.at(i + 1) + 1;
+		}
+    }
+}
 
 void setNodeWeights(Graph &g, vector <int> colors)
-// Set node weights to the values specified in the vector colors
+// Set node weights to the values specified in the vector 'colors'
 {
 	int n = num_vertices(g);
 
@@ -208,39 +214,6 @@ void setNodeWeights(Graph &g, vector <int> colors)
 		{
 			g[i].color = 0;
 		}
-	}
-}
-
-void printSolution(Graph &g, int numConflicts, int numColors)
-// Print coloring solution as well as write it to an output file
-{
-	ofstream myfile;
-	int size = num_vertices(g);
-	myfile.open("outputs/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
-
-
-	cout << "Total Conflicts: " << numConflicts << endl;
-	myfile << "Total Conflicts: " << numConflicts << endl;
-
-	for (int counter = 0; counter < num_vertices(g); counter++)
-	{
-		cout << counter << ": " << g[counter].color << endl;
-		myfile << counter << ": " << g[counter].color << endl;
-	}
-	myfile.close();
-}
-
-void convertToBaseK(int num, vector <int> &bin, int k)
-// Convert num to base-k representation, stores each digit in bin
-{
-	if (num < k)
-	{
-		bin.push_back(num);
-	}
-	else
-	{
-		convertToBaseK(num / k, bin, k);
-		bin.push_back(num%k);
 	}
 }
 
@@ -260,13 +233,21 @@ int calculateNumConflicts(Graph &g)
 	return numConflicts;
 }
 
-int sumOfVectorElements(vector <int> v)
+void printSolution(Graph &g, int numConflicts, int numColors)
+// Print coloring solution as well as write it to an output file
 {
-    int sum = 0;
-    for (int i = 0; i < v.size(); i++)
-    {
-        sum += v.at(i);
-    }
-    //cout << "sum of elements is "<< sum << endl;
-    return sum;
+	ofstream myfile;
+	int size = num_vertices(g);
+	myfile.open("outputs/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
+
+
+	cout << "Total Conflicts: " << numConflicts << endl;
+	myfile << "Total Conflicts: " << numConflicts << endl;
+
+	for (int counter = 0; counter < num_vertices(g); counter++)
+	{
+		cout << counter << ": " << g[counter].color << endl;
+		myfile << counter << ": " << g[counter].color << endl;
+	}
+	myfile.close();
 }

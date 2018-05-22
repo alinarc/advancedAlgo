@@ -1,12 +1,26 @@
-For this first project the algorithm we implemented as the exhaustive algorithm. While simple on the surface, "execute every
-possible option," there were many hurdles the team ran into in the execution. One roadblock was at first the group attempted
-to write each possible combination into a vector, this proved to be extremely resource intensive an infeasible. The decision
-was made instead to just hold the best combination at the time as a vector. Another problem arose when the larger sized 
-variations were not yielding any results if cut off by the 600 second time limit. The source of this problem was tracked to
-the point where the team had initially checked the combinations of maximum size and worked our way down. It was discovered 
-that with the larger sized variations, no combination was discovered in time that satisfied the cost requirement, returning
-an empty vector; this was solved by reversing the order and beginning with combinations of size 1 and working our way up.
-Additionally while working with graph coloring another issue of a variable of immense size arose when trying to increment through
-every variation of colorings. Instead of going through a massive forloop we ended up creating a method that incremented 
-in base K through all options adding one to the first bit every time and then seperately checking to see if any bit (starting
-at the first) was equal to the base number and if so setting it to 0 and adding one to the bit next to it. 
+Alina Rossi-Conaway, Alexander Duffy
+Prof. Waleed Maleis
+EECE4542
+20 May 2017
+
+For this assignment, we wrote exhaustive algorithms to arrive at solutions for the knapsack problem and graph coloring, i.e. the algorithms evaluated every possible solution in a naive fashion (within a time limit) and stored the one with the optimal value. While this approach seemed simple at first, we found that evaluating algorithms whose complexity is exponential or factorial with instance size required some careful use of resources.
+
+Project 1a
+----------
+We wrote an exhaustive algorithm to arrive at solutions for the knapsack problem, i.e. our algorithm evaluated every possible combination of the collection of items and stored the combination that had maximum value and total cost less than the limit. 
+
+Initially, our approach involved storing every possible knapsack in a vector of type knapsack. While this worked for some of the smaller instances, the number of combinations and thus vector size blew up quickly and crashed the program. Thus, this approach was too resource-intensive. Instead of storing every possible combination, we rewrote the algorithm that still evaluated each combination one at a time, but only held onto the current minimum knapsack. 
+
+Another problem arose when the algorithm, for larger instances, returned  knapsacks with 0 items in them. We identified the source of this problem to be the fact that when we generated all combinations (of size n down to 1), we started with combinations of size n and worked our way down. We assume that, for larger instances, no combination was discovered in time that satisfied the cost requirement, returning an empty vector. This was solved by reversing the order: beginning with combinations of size 1 and working our way up.
+
+We observed while running the instances that as instance size went up, the fraction of the total value of the knapsack size to the cost limit decreased substantially. We infer that this is due to the fact that the number of possible combinations to evaluate grows exponentially with instance size, meaning that the algorithm didn’t have time to evaluate all better combinations for the larger instances.
+
+Project 1b
+----------
+We wrote an algorithm to assign a coloring to graphs with a given number of colors in such a way that the number of conflicts (edges whose start and end nodes are the same color) was minimized. To do so, we recognized that each coloring of size k could be represented as a base-k number, and that to evaluate each possible coloring we had to increment through the appropriate range of base-k numbers (e.g. ‘00000’ to ‘22222’ for a graph with 5 vertices and k=3 colors).
+
+Additionally to evaluate these possibilities, we tried to increment an integer in base-10 and convert to base-k for each possible combination. However, we found that with larger instances the base-10 integer quickly became too large to use any typical C++ datatypes—thus this was a flaw in our approach. 
+
+We worked around this storage issue by storing the integer in a vector (in base-k, with each vector element representing a digit), and writing a function to increment this base-k number. By doing so, we were able to evaluate every possible combination (within a time limit).
+
+We observed as we ran the instances that the ratio of numConflicts to numEdges grew substantially with instance size, and that the coloring selection was essentially the same for all of the larger instances. We infer that this is due to the fact that the algorithm evaluates every combination in a purely naive way, one by one, and thus the time limit restricts it from evaluating combinations past a certain number

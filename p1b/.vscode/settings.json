@@ -9,6 +9,7 @@
         "iosfwd": "cpp",
         "iterator": "cpp",
         "vector": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "valarray": "cpp"
     }
 }
