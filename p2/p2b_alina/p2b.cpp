@@ -287,3 +287,16 @@ bool areAdjacent(Vertex &v1, Vertex &v2, Graph &g)
 		return true;
 	else return false;
 }
+
+bool isAdjacentToColor(Vertex &v, Graph &g, int color)
+{
+	pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+	for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+	{
+		if (g[vItr].color == color)
+		{
+			
+		}
+	}
+
+}
