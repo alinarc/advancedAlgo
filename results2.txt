@@ -1,0 +1,24 @@
+Alexander Duffy, Alina Rossi-Conaway
+Prof. Waleed Maleis
+EECE4542
+24 May 2017
+
+For this assignment, we wrote greedy algorithms to arrive at solutions for the knapsack problem and graph coloring. The algorithms first sorted the nodes / items in some manner then proceeded to apply them with a label if the label did not create any conflicts unless a conflict was unavoidable. We were pleasently surprised when all of our instances finished quickly as compared to the exhaustive algorithm of last week's project which demonstrated the importance of using a 'smarter' algorithm.
+
+Project 2a
+----------
+The sorting for the knapsack problem was more obvious, the group sorted the items by their cost to weight ratio.
+
+After they had been sorted, it was trivial to move through the sorted list adding any item that would fit under the cost limit and skipping those that would not.
+
+Project 2b
+----------
+The colored graph problem proved to be harder to wrap our heads around.
+
+Initially we thought about ways to improve the accuracy ranged from simple, sorting by least neighbors, to complex, sorting by most neighbors and using least neighbors neighbors as a tie break.
+
+Eventually we settled on sorting the nodes by most to least neighbors.
+
+After doing so we set a color then looped through every vertex, checked if it was already colored, and if not; if coloring it with the current color did not create a conflict, we colored it with that color.
+
+This continued while incrementing the color choice until reaching the last color where all non-colored nodes would be colored with that last color before checking the final number of conflicts.
