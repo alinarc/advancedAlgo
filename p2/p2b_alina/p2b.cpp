@@ -29,24 +29,25 @@ typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
 void initializeGraph(Graph &g, ifstream &fin);
-int exhaustiveColoring(Graph &g, int numColors, int t);
+int greedyColoring(Graph &g, int numColors, int t, vector <Vertex> sortedNodes);
 int sumOfVectorElements(vector <int> v);
 void setNodeWeights(Graph &g, vector <int> colors);
 int calculateNumConflicts(Graph &g);
 void baseKIncrement(int numColors, vector<int> &v);
 void printSolution(Graph &g, int numConflicts, int numColors);
-void computeVertexDegrees(Graph &g);
 vector <Vertex> sortVerticesByDegree(Graph &g);
 void swap(int v1, int v2, vector <Vertex> &v);
 void printVerticesAndDegrees(vector<Vertex> &v, Graph &g);
+void color(Vertex &v, Graph &g, int color);
+void uncolor(Vertex &v, Graph &g);
+bool areAdjacent(Vertex &v1, Vertex &v2, Graph &g);
 
 
 struct VertexProperties
 {
 	pair<int, int> cell; // maze cell (x,y) value
 	Graph::vertex_descriptor pred;
-	bool visited;
-	bool marked;
+	bool colored;
 	int degree;
 	int color;
 };
@@ -99,6 +100,7 @@ int main()
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
 
+		greedyColoring(g, numColors, 600, verts);
 		//numConflicts = exhaustiveColoring(g, numColors, 600);
 		//printSolution(g, numConflicts, numColors);
 
@@ -135,106 +137,35 @@ void initializeGraph(Graph &g, ifstream &fin)
 	{
 		fin >> j >> k;
 		add_edge(j, k, g);  // Assumes vertex list is type vecS
+		g[j].degree = g[j].degree + 1;
+		g[k].degree = g[k].degree + 1;
 	}
-
-	computeVertexDegrees(g);
 
 }
 
-int exhaustiveColoring(Graph &g, int numColors, int t)
-/*
-Iterates through all possible colorings by using the fact that an
-integer can represent a coloring of size k by converting the integer to
-base-k representation. Starts from 0 and repeatedly calls the function
-baseKIncrement to increment the base-k number stored in vector 'colors',
-thus coming up with a new coloring. Calls calculateNumConflicts for each
-assignment, and stores the minimum number of conflicts.
-*/
+int greedyColoring(Graph &g, int numColors, int t, vector <Vertex> sortedNodes)
 {
-	clock_t startTime = clock();
-
-	int size = num_vertices(g);
-	int minConflicts = LargeValue;
-	int maxSum = (numColors - 1) * size; // Maximum sum of elements in vector 'colors'
-
-
-	vector <int> colors(size, 0); // Will store each coloring assignment
-	vector <int> vectorForMin(size); // Will store coloring assignment with minimum conflicts
-
-	while (sumOfVectorElements(colors) < maxSum) // While we still have legal colorings to evaluate
+	int n = 0;
+	for (int i = 0; i < sortedNodes.size(); i++)
 	{
-		int diff = clock() - startTime;
-		int runTime = diff / CLOCKS_PER_SEC;
-		if (runTime <= t) // Checks that runTime is less than the time limit
+		if (n < numColors)
 		{
-			setNodeWeights(g, colors);
-			int numConflicts = calculateNumConflicts(g);
-
-			if (numConflicts < minConflicts) // Store minimum num conflicts and the vector that corresponds to it
+			if (!g[sortedNodes.at(i)].colored)
 			{
-				minConflicts = numConflicts;
-				for (int i = 0; i < size; i++)
+				color(sortedNodes.at(i), g, n);
+				for (int j = i + 1; j < sortedNodes.size(); j++)
 				{
-					vectorForMin.at(i) = colors.at(i);
+					if (!areAdjacent(sortedNodes.at(i), sortedNodes.at(j), g))
+						color(sortedNodes.at(j), g, n);
 				}
 			}
-			baseKIncrement(numColors, colors);
 		}
-		else break; // Breaks loop if runTime has exceeded time limit
+		n+=1;
 	}
 
-	setNodeWeights(g, vectorForMin); // Assign coloring with minimum weight
-	minConflicts = calculateNumConflicts(g);
-	return minConflicts;
 }
 
-int sumOfVectorElements(vector <int> v)
-// Sum the contents of vector 'v'
-{
-	int sum = 0;
-	for (int i = 0; i < v.size(); i++)
-	{
-		sum += v.at(i);
-	}
-	return sum;
-}
 
-void baseKIncrement(int numColors, vector<int> &v)
-/*
-Takes in a vector whose components represent a coloring assigment (i.e. an
-integer in base-k representation) where k = numColors, and increments it to
-generate a new coloring assignment
-*/
-{
-	int size = v.size();
-	v.at(0) = v.at(0) + 1;
-	for (int i = 0; i < size; i++)
-	{
-		if (v.at(i) == numColors)
-		{
-			v.at(i) = 0;
-			v.at(i + 1) = v.at(i + 1) + 1;
-		}
-	}
-}
-
-void setNodeWeights(Graph &g, vector <int> colors)
-// Set node weights to the values specified in the vector 'colors'
-{
-	int n = num_vertices(g);
-
-	for (int i = 0; i < n; i++)
-	{
-		if (i < colors.size())
-		{
-			g[i].color = colors.at(i);
-		}
-		else
-		{
-			g[i].color = 0;
-		}
-	}
-}
 
 int calculateNumConflicts(Graph &g)
 // Calculate the number of conflicts in Graph g
@@ -271,26 +202,8 @@ void printSolution(Graph &g, int numConflicts, int numColors)
 	myfile.close();
 }
 
-void computeVertexDegrees(Graph &g)
-{
-    pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
-    for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
-    {
-        int count = 0;
-        pair <adj_iterator, adj_iterator> adjItrRange = adjacent_vertices(*vItr, g);
-        for (adj_iterator adjItr = adjItrRange.first; adjItr != adjItrRange.second; ++adjItr)
-        {
-            count = count + 1;
-		} 
-
-		g[*vItr].degree = count;
-		cout << "degree of vertex " << *vItr << " is " << g[*vItr].degree << endl;
-    }
-}
-
 vector<Vertex> sortVerticesByDegree(Graph &g)
 {
-	cout << "sorting vertices " << endl;
 	vector <Vertex> nodes;
     nodes.resize(num_vertices(g));
     int i, j, currMax;
@@ -305,7 +218,6 @@ vector<Vertex> sortVerticesByDegree(Graph &g)
 	for (i = 0; i < nodes.size() - 1; i++)
 	{
 		currMax = i;
-		cout << "i: currMax is " << currMax << endl;
 		for (j = i+1; j < nodes.size(); j++)
 		{
 			if (g[nodes.at(j)].degree > g[nodes.at(currMax)].degree)
@@ -343,7 +255,6 @@ vector<Vertex> sortVerticesByDegree(Graph &g)
 
 void swap(int v1, int v2, vector <Vertex> &v)
 {
-	cout << "swapping vertices " << v1 << " and " << v2 << endl;
 	Vertex temp = v.at(v1);
 	v.at(v1) = v.at(v2);
 	v.at(v2) = temp;
@@ -355,4 +266,24 @@ void printVerticesAndDegrees(vector<Vertex> &v, Graph &g)
 	{
 		cout << v.at(i) << ": " << g[v.at(i)].degree << endl;
 	}
+}
+
+void color(Vertex &v, Graph &g, int color)
+{
+	cout << "Coloring vertex " << v << " with color " << color << endl;
+ 	g[v].color = color;
+	g[v].colored = true;
+}
+
+void uncolor(Vertex &v, Graph &g)
+{
+	g[v].colored = false;
+}
+
+bool areAdjacent(Vertex &v1, Vertex &v2, Graph &g)
+{
+	pair <Edge, bool> checkEdge = edge(v1, v2, g);
+	if (checkEdge.second)
+		return true;
+	else return false;
 }
