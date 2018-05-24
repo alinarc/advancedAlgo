@@ -29,7 +29,7 @@ typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
 void initializeGraph(Graph &g, ifstream &fin);
-int greedyColoring(Graph &g, int numColors, int t, vector <Vertex> sortedNodes);
+int greedyColoring(Graph &g, int numColors, int t);
 int sumOfVectorElements(vector <int> v);
 void setNodeWeights(Graph &g, vector <int> colors);
 int calculateNumConflicts(Graph &g);
@@ -39,8 +39,7 @@ vector <Vertex> sortVerticesByDegree(Graph &g);
 void swap(int v1, int v2, vector <Vertex> &v);
 void printVerticesAndDegrees(vector<Vertex> &v, Graph &g);
 void color(Vertex &v, Graph &g, int color);
-void uncolor(Vertex &v, Graph &g);
-bool areAdjacent(Vertex &v1, Vertex &v2, Graph &g);
+bool isAdjacentToColor(Vertex &v, Graph &g, int color);
 
 
 struct VertexProperties
@@ -69,7 +68,7 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color/color12-3.input";
+	fileName = "color/color192-8.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
@@ -89,20 +88,17 @@ int main()
 		int numConflicts = -1;
 		fin >> numColors;
 		
+		cout << "numColors is " << numColors << endl;
+
 		initializeGraph(g, fin);
-
-		vector <Vertex> verts = sortVerticesByDegree(g);
-
-		printVerticesAndDegrees(verts, g);
 
 
 		cout << "Num nodes: " << num_vertices(g) << endl;
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
 
-		greedyColoring(g, numColors, 600, verts);
-		//numConflicts = exhaustiveColoring(g, numColors, 600);
-		//printSolution(g, numConflicts, numColors);
+		numConflicts = greedyColoring(g, numColors, 600);
+		printSolution(g, numConflicts, numColors);
 
 	}
 	catch (indexRangeError &ex)
@@ -130,6 +126,9 @@ void initializeGraph(Graph &g, ifstream &fin)
 	{
 		cout << " adding vertex " << i << endl;
 		v = add_vertex(g);
+		g[v].degree = 0;
+		g[v].colored = false;
+		g[v].color = -1;
 	}
 		
 
@@ -140,29 +139,35 @@ void initializeGraph(Graph &g, ifstream &fin)
 		g[j].degree = g[j].degree + 1;
 		g[k].degree = g[k].degree + 1;
 	}
+//cout << "the degree of vertex 0 is " << g[0].degree << endl;
 
 }
 
-int greedyColoring(Graph &g, int numColors, int t, vector <Vertex> sortedNodes)
+int greedyColoring(Graph &g, int numColors, int t)
 {
+	vector <Vertex> sortedNodes = sortVerticesByDegree(g);
+	printVerticesAndDegrees(sortedNodes, g);
 	int n = 0;
-	for (int i = 0; i < sortedNodes.size(); i++)
+	while (n < numColors)
 	{
-		if (n < numColors)
+		for (int i = 0; i < sortedNodes.size(); i++)
 		{
-			if (!g[sortedNodes.at(i)].colored)
+			if (n < numColors - 1)
 			{
-				color(sortedNodes.at(i), g, n);
-				for (int j = i + 1; j < sortedNodes.size(); j++)
+				if (!g[sortedNodes.at(i)].colored && !isAdjacentToColor(sortedNodes.at(i), g, n))
 				{
-					if (!areAdjacent(sortedNodes.at(i), sortedNodes.at(j), g))
-						color(sortedNodes.at(j), g, n);
+					color(sortedNodes.at(i), g, n);	
 				}
+			}
+			else if (n == numColors - 1)
+			{
+				if(!g[sortedNodes.at(i)].colored)
+					color(sortedNodes.at(i), g, n);	
 			}
 		}
 		n+=1;
 	}
-
+	return calculateNumConflicts(g);
 }
 
 
@@ -188,7 +193,7 @@ void printSolution(Graph &g, int numConflicts, int numColors)
 {
 	ofstream myfile;
 	int size = num_vertices(g);
-	myfile.open("outputs/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
+	myfile.open("output/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
 
 
 	cout << "Total Conflicts: " << numConflicts << endl;
@@ -275,28 +280,17 @@ void color(Vertex &v, Graph &g, int color)
 	g[v].colored = true;
 }
 
-void uncolor(Vertex &v, Graph &g)
-{
-	g[v].colored = false;
-}
-
-bool areAdjacent(Vertex &v1, Vertex &v2, Graph &g)
-{
-	pair <Edge, bool> checkEdge = edge(v1, v2, g);
-	if (checkEdge.second)
-		return true;
-	else return false;
-}
-
 bool isAdjacentToColor(Vertex &v, Graph &g, int color)
 {
 	pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
 	for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
 	{
-		if (g[vItr].color == color)
+		if (g[*vItr].color == color)
 		{
-			
+			pair <Edge, bool> checkEdge = edge(*vItr, v, g);
+			if (checkEdge.second)
+				return true;
 		}
 	}
-
+	return false;
 }
