@@ -61,6 +61,7 @@ matrix<T>::matrix(int numRows, int numCols, const T& initVal):
 	mat(numRows, vector<T>(numCols,initVal))
 {}
 
+// Allows user to define a matrix with two vectors
 template <typename T>
 void matrix<T>::populateWithVectors(vector <T> index, vector <T> ratio)
 {
@@ -71,19 +72,6 @@ void matrix<T>::populateWithVectors(vector <T> index, vector <T> ratio)
 		mat[i][1] = ratio.at(i);
 	}
 }	
-
-/* template <typename T>
-matrix<T>::matrix(vector <T> index, vector <T> cost, vector <T> value, vector <T> ratio)
-{
-	resize(index.size(), 4);
-	for(int i = 0; i < rows(); i++)
-	{
-		mat[i][0] = index.at(i);
-		mat[i][1] = cost.at(i);
-		mat[i][2] = value.at(i);
-		mat[i][3] = ratio.at(i);
-	}
-}	 */
 	
 // non-constant version. provides general access to matrix
 // elements
@@ -142,6 +130,7 @@ void matrix<T>::resize(int numRows, int numCols)
 		mat[i].resize(nCols);
 }
 
+// Helper function for sort
 template <typename T>
 void matrix<T>::swap(int i1, int i2)
 {
@@ -150,6 +139,7 @@ void matrix<T>::swap(int i1, int i2)
 	mat[i2] = temp;
 }
 
+// Sorts matrix by the quantity in column 1 of the matrix
 template <typename T>
 void matrix<T>::sortByRatio()
 {

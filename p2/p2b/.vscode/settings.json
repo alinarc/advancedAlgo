@@ -1,8 +1,8 @@
 {
+    "window.zoomLevel": -1,
+    "C_Cpp.intelliSenseEngine": "Tag Parser",
     "files.associations": {
-        "__bit_reference": "cpp",
-        "algorithm": "cpp",
-        "bitset": "cpp",
-        "chrono": "cpp"
+        "iostream": "cpp",
+        "bitset": "cpp"
     }
 }

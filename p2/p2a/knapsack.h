@@ -58,13 +58,11 @@ knapsack::knapsack(ifstream &fin)
       cost[j] = c;
       float rat = v / c;
       ratio[j] = v / c;
-      cout << "ratio for item " << j << " is " << rat << endl;
       unSelect(j);
    }
 
    data.populateWithVectors(index, ratio);
    data.sortByRatio();
-   cout << data << endl;
    totalValue = 0;
    totalCost = 0;
 }

@@ -1,4 +1,4 @@
-// Project 1a: Solving knapsack using exhaustive search
+// Project 2a: Solving knapsack using greedy algorithm
 // Alina Rossi-Conaway & Alexander Duffy
 
 #include <iostream>
@@ -17,7 +17,7 @@ using namespace std;
 #include "d_matrix.h"
 #include "knapsack.h"
 
-void greedyKnapsack(knapsack &k, const int &t);
+void greedyKnapsack(knapsack &k);
 
 int main()
 {
@@ -41,7 +41,6 @@ int main()
       cerr << "Cannot open " << fileName << endl;
       exit(1);
    }
-
    try
    {
       cout << "Reading knapsack instance" << endl;
@@ -49,13 +48,12 @@ int main()
 
       cout << k << endl;
 
-      greedyKnapsack(k, 600);
+      greedyKnapsack(k);
 
       cout << endl << "Best solution" << endl;
       k.printSolution();
       
    }    
-
    catch (indexRangeError &ex) 
    { 
       cout << ex.what() << endl; exit(1);
@@ -66,25 +64,13 @@ int main()
    }
 }
 
-void greedyKnapsack(knapsack &k, const int &t)
+void greedyKnapsack(knapsack &k)
+// Greedy algorithm to find optimal knapsack solution. Considers item in decreasing order of ratio (of value to cost), adds them if they don't create a conflict (exceed costLimit).
 {
-    clock_t startTime = clock();
     int i = 0;
     while (k.getCost()+k.getCost(k.getVector(i).at(0)) < k.getCostLimit() && i < k.getNumObjects())
     {
-        int diff = clock() - startTime;
-        int runTime = diff / CLOCKS_PER_SEC;
-
-        if (runTime <= t)
-        {
-            //cout << "evaluating item " << k.getVector(i).at(0) << endl;
-            k.select(k.getVector(i).at(0));
-            i+=1;
-        }
-        else
-        {
-            cout << "time is " << runTime << endl;
-            break;
-        }
+        k.select(k.getVector(i).at(0));
+        i+=1;
     }
 }
