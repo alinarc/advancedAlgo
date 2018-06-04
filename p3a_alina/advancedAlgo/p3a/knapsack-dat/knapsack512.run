@@ -1,0 +1,12 @@
+model knapsack512.mod;
+data knapsack512.dat;
+solve;
+
+display costBound > output/output512.txt;
+
+var totalCost = sum{i in 0..n-1} x[i]*cost[i];
+var totalVal = sum{i in 0..n-1} x[i]*value[i];
+
+display totalVal > output/output512.txt;
+display totalCost > output/output512.txt;
+display x > output/output512.txt;
