@@ -18,7 +18,8 @@ subject to c1 {i in 0..numNodes-1}:
 
 	
 c3 {i in 0..numNodes-1, j in 0..numNodes-1, c in 0..numColors-1}:
-	(edge[i,j] = 1 and color[i,c] = 1 and color[j,c] = 1) ==> conflict[i,j] = 1;
+	(if edge[i,j] = 1 && color[i,c] = 1 && color[j,c] = 1 
+	then conflict[i,j] = 1;
 
 c5 {i in 0..numNodes-1, j in 0..numNodes-1}:
 	edge[i,j] = 0 ==> conflict[i,j] = 0;
