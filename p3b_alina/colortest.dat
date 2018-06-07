@@ -1,4 +1,4 @@
-param numColors := 3;
+param numColors := 2;
 param numNodes := 5;
 
 set edgeList:=
