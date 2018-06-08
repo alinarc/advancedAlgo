@@ -1,0 +1,7 @@
+model color.mod;
+data color12-3.dat;
+solve;
+
+display numConflicts > output/output12-3.txt;
+
+display color > output/output12-3.txt;

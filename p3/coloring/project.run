@@ -1,0 +1,25 @@
+option solver cplex;
+option cplex_options 'time=600';
+
+reset;
+include color12-3.run;
+reset;
+include color12-4.run;
+reset;
+include color24-4.run;
+reset;
+include color24-5.run;
+reset;
+include color48-5.run;
+reset;
+include color48-6.run;
+reset;
+include color96-6.run;
+reset;
+include color96-7.run;
+reset;
+include color192-6.run;
+reset;
+include color192-7.run;
+reset;
+include color192-8.run;

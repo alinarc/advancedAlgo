@@ -1,0 +1,7 @@
+model color.mod;
+data color96-6.dat;
+solve;
+
+display numConflicts > output/output96-6.txt;
+
+display color > output/output96-6.txt;

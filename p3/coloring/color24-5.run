@@ -1,0 +1,7 @@
+model color.mod;
+data color24-5.dat;
+solve;
+
+display numConflicts > output/output24-5.txt;
+
+display color > output/output24-5.txt;

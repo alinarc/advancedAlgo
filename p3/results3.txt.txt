@@ -1,0 +1,12 @@
+Alina Rossi-Conaway & Alexander Duffy
+Prof. Waleed Meleis
+EECE4542
+8 June 2018
+
+For this assignment, we used AMPL to formulate the knapsack and graph coloring probelms as linear programming 
+problems to be solved by CPLEX.
+
+Project 3a
+----------
+Solving the knapsack problem using AMPL proved fairly straightforward. We simply had to declare a vector of 
+binary variables of the size of the knapsack instance, specify the objective to maximize (
