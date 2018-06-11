@@ -8,7 +8,7 @@
             "type": "shell",
             "command": "g++",
             "args": [
-                "-w","pfduffy/p4.cpp"
+                "-w","p4.cpp"
             ],
             "group": {
                 "kind": "build",
