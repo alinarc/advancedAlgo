@@ -1,3 +1,4 @@
+
 // Knapsack class
 // Version f08.1
 
@@ -10,24 +11,18 @@ class knapsack
       int getValue(int) const;
       int getCost() const;
       int getValue() const;
-      float getRatio(int i) const;
       int getNumObjects() const;
       int getCostLimit() const;
+      float bound();
       void printSolution();
       void select(int);
       void unSelect(int);
       bool isSelected(int) const;
       void unSelectAll();
       vector <float> getVector(int i);
-      float bound();
-      int getObjChecked() const;
-      void setObjChecked(int i);
-      float getIndexAt(int i) const;
-      float getRatioAt(int i) const;
 
    private:
       int numObjects;
-      int objChecked;
       int costLimit;
       vector<float> index;
       vector<float> value;
@@ -35,8 +30,8 @@ class knapsack
       vector<float> ratio;
       vector<bool> selected;
       matrix<float> data;
-      float totalValue;
-      float totalCost;
+      int totalValue;
+      int totalCost;
 };
 
 knapsack::knapsack(ifstream &fin)
@@ -63,10 +58,13 @@ knapsack::knapsack(ifstream &fin)
       index[j] = j;
       value[j] = v;
       cost[j] = c;
+      float rat = v / c;
       ratio[j] = v / c;
-      unSelect(j);
+      unSelect(j);    
+
+
    }
-   objChecked=0;
+
    data.populateWithVectors(index, ratio);
    data.sortByRatio();
    totalValue = 0;
@@ -80,86 +78,90 @@ knapsack::knapsack(const knapsack &k)
    
    value.resize(n);
    cost.resize(n);
-   index.resize(n);
-   ratio.resize(n);
    selected.resize(n);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
-   objChecked = k.getObjChecked();
-
 
    totalCost = 0;
    totalValue = 0;
 
    for (int i = 0; i < n; i++)
    {
-      index[i] = k.getIndexAt(i);
-      ratio[i] = k.getRatioAt(i);
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
       if (k.isSelected(i))
-	      select(i);
+	 select(i);
       else
-	      unSelect(i);
+	 unSelect(i);
    }
-   data.populateWithVectors(index,ratio);
-   data.sortByRatio();
 }
-
-int knapsack::getObjChecked() const
-{
-      return objChecked;
-}
-
-void knapsack::setObjChecked(int i)
-{
-      objChecked = i;
-}
-
-float knapsack::getIndexAt(int i) const
-{          
-      return index.at(i);
-}
-
-float knapsack::getRatioAt(int i) const
-{
-      return ratio.at(i);
-}
-
 
 float knapsack::bound()
 {
-    vector <bool> initSelected = selected;
-    float initVal = totalValue;
-    float initCost = totalCost;
-
-    for (int i = 0; i < numObjects; i++)
-    {
-      float nextItem = data[i][0];
-      float nextRatio = data[i][1];
-      if (!selected.at(nextItem) && nextItem >= objChecked)
+      
+      float theBound = 0;
+      float theCost = 0;
+      float theValue = 0;
+      int index;
+      vector<int> usedIndices;
+      //to keep track of if it has been used in the calculation of the bound already
+      while (theCost != costLimit)
       {
-        if (totalCost + cost.at(nextItem) <= costLimit)
-        {
-          select(nextItem);
-        }
-        else
-        {
-          float diff = costLimit - totalCost;
-          totalValue += (diff * nextRatio);
-          totalCost += diff;
-        }
-      }
-    }
-    float boundValue = totalValue;
+            float maxRatio = 0;
+            int numUsed = usedIndices.size();
+            bool used = false;
+            //if the index has been used already
+            for (int i =0; i<numObjects; i++)
+            {
+                  used = false;
+                  if (numUsed!=0)
+                  {
+                        for (int j =0;j<numUsed;j++)
+                        {
+                              //check to make sure the index hasn't been used already
+                              if (i == usedIndices.at(j))
+                                    used = true;
+                        }
+                  }
+                  //cout<<endl<<"Before the loop the ratio is:"<<ratio.at(i)<<" and the max is "<<maxRatio<<" num used:"<<numUsed<<endl;
+                  if (ratio.at(i) > maxRatio && used==false)
+                  {
+                        //cout<<"went in";
+                        maxRatio = ratio.at(i);
+                        index = i; 
+                  }
+            }
+            cout<<endl<<"index is:"<<index;
+            usedIndices.push_back(index);
+            if (theCost + cost.at(index) <= costLimit)
+            //if adding the full item is possible
+            {
+                  theCost = theCost + cost.at(index);
+                  theValue = theValue + value.at(index);
+                  cout<<endl<<"The Cost is:"<<theCost<<" the Value is:"<<theValue<<endl<<"The Used Indices are: "; 
+                  for (int i=0; i <=numUsed;i++)
+                  {
+                        cout<<usedIndices.at(i)<<" ";
+                  }
+            }
+            else if (theCost + cost.at(index) > costLimit)
+            //if we can't add the full item
+            {
+                  float theDifference = costLimit - theCost;
+                  float thePercentage = theDifference/cost.at(index);
+                  //the percentage of the cost that can fit
+                  theCost = cost.at(index)*thePercentage + theCost;
+                  theValue = value.at(index)*thePercentage + theValue;
+                  cout<<endl<<"The Cost is:"<<theCost<<" the Value is:"<<theValue<<endl<<"The Used Indices are: "; 
+                  for (int i=0; i <=numUsed;i++)
+                  {
+                        cout<<usedIndices.at(i)<<" ";
+                  }
+            }
+      } 
+      return theValue;
 
-    selected = initSelected;
-    totalValue = initVal;
-    totalCost = initCost;
-
-    return boundValue;
 }
-
 int knapsack::getNumObjects() const
 {
    return numObjects;
@@ -169,6 +171,7 @@ int knapsack::getCostLimit() const
 {
    return costLimit;
 }
+
 
 int knapsack::getValue(int i) const
 // Return the value of the ith object.
@@ -186,13 +189,6 @@ int knapsack::getCost(int i) const
       throw rangeError("Bad value in knapsack::getCost");
 
    return cost[i];
-}
-
-float knapsack::getRatio(int i) const
-{
-  if (i < 0 || i >= getNumObjects())
-      throw rangeError("Bad value in knapsack::getCost");
-  return ratio.at(i);
 }
 
 int knapsack::getCost() const
@@ -226,7 +222,7 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
    cout << "Total cost: " << totalCost << endl << endl;
 
    for (int i = 0; i < k.getNumObjects(); i++)
-      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << " " << k.getRatio(i) << endl;
+      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << endl;
 
    cout << endl;
 

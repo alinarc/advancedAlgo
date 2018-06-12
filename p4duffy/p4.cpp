@@ -5,11 +5,12 @@
 #include <limits.h>
 #include <list>
 #include <fstream>
-#include <queue>
+#include <deque>
 #include <stack>
 #include <vector>
 #include <time.h>
 #include <string>
+#include <queue>
 
 using namespace std;
 
@@ -17,6 +18,57 @@ using namespace std;
 #include "d_matrix.h"
 #include "knapsack.h"
 
+knapsack branchAndBound(knapsack & knap)
+{
+    deque<knapsack> theDeq;
+    //the deque
+    bool done = false;
+    knapsack maxKnap = knap;
+    theDeq.push_back(knap);
+    while (theDeq.empty()==false)
+    {
+        if (theDeq.front().getObjChecked() == theDeq.front().getNumObjects()-1)
+        {
+            maxKnap = theDeq.front();
+            float maxBound = theDeq.front().bound();
+            theDeq.pop_front();
+            float tempBound = theDeq.front().bound();
+            while (tempBound < maxBound)
+            {
+                theDeq.pop_front();
+                tempBound = theDeq.front().bound();
+            }
+        }
+        //if we get a finished solution, that becomes the max(Knap)
+        //then pops it off the front and checks if the next bound is greater than the max 
+        //if not pops it off and continues to do so until one is not
+        if (theDeq.empty()==false)
+        {
+            knapsack knap1 = theDeq.front();
+            knapsack knap2 = theDeq.front();
+            theDeq.pop_front();
+            //sets two temp knapsacks as the first one which is one with a value greater than the max
+            int objectInUse = knap1.getObjChecked();
+            knap1.select(objectInUse);
+            knap1.setObjChecked(objectInUse+1);
+            knap2.unSelect(objectInUse);
+            knap2.setObjChecked(objectInUse+1);
+            if (knap1.bound() >= knap2.bound())
+            {
+                theDeq.push_front(knap1);
+                theDeq.push_back(knap2);
+            }
+            else
+            {
+                theDeq.push_front(knap2);
+                theDeq.push_back(knap1);
+            }
+        }
+        
+
+    }
+    return maxKnap;
+}
 
 int main()
 {
@@ -49,7 +101,9 @@ int main()
 
       float theBound = k.bound();
       cout << endl << "The Bound is " << theBound<< endl;
-      
+      knapsack best = branchAndBound(k);
+      cout<<"The best is:"<<endl;
+      best.printSolution();
       
    }    
    catch (indexRangeError &ex) 
