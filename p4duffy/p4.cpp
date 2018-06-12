@@ -22,22 +22,26 @@ knapsack branchAndBound(knapsack & knap)
 {
     deque<knapsack> theDeq;
     //the deque
-    bool done = false;
     knapsack maxKnap = knap;
     theDeq.push_back(knap);
     while (theDeq.empty()==false)
     {
+        cout<<theDeq.front().bound()<< " num checked:"<<theDeq.front().getObjChecked()<<" totalnum:"<<theDeq.front().getNumObjects()<<endl;
         if (theDeq.front().getObjChecked() == theDeq.front().getNumObjects()-1)
+        //getObjChecked is "num" or what object we're on
         {
             maxKnap = theDeq.front();
-            float maxBound = theDeq.front().bound();
+            float maxBound = maxKnap.getValue();
             theDeq.pop_front();
             float tempBound = theDeq.front().bound();
-            while (tempBound < maxBound)
+            //cout<<"test1";
+            while (tempBound < maxBound && theDeq.empty()==false) 
             {
                 theDeq.pop_front();
-                tempBound = theDeq.front().bound();
+                if (!theDeq.empty())
+                    tempBound = theDeq.front().bound();
             }
+            //cout<<"test2";
         }
         //if we get a finished solution, that becomes the max(Knap)
         //then pops it off the front and checks if the next bound is greater than the max 
@@ -53,16 +57,20 @@ knapsack branchAndBound(knapsack & knap)
             knap1.setObjChecked(objectInUse+1);
             knap2.unSelect(objectInUse);
             knap2.setObjChecked(objectInUse+1);
-            if (knap1.bound() >= knap2.bound())
+            if (reset)
+                knap1=knap2;
+            if (knap1.bound() > knap2.bound())
             {
                 theDeq.push_front(knap1);
                 theDeq.push_back(knap2);
             }
-            else
+            else if (knap1.bound() < knap2.bound())
             {
                 theDeq.push_front(knap2);
                 theDeq.push_back(knap1);
             }
+            else 
+                theDeq.push_front(knap1);
         }
         
 

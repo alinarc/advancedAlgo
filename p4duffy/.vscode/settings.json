@@ -6,6 +6,7 @@
         "ostream": "cpp",
         "__locale": "cpp",
         "iostream": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "xlocale": "cpp"
     }
 }
