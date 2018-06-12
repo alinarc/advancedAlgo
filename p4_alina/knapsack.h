@@ -10,6 +10,7 @@ class knapsack
       int getValue(int) const;
       int getCost() const;
       int getValue() const;
+      float getRatio(int i) const;
       int getNumObjects() const;
       int getCostLimit() const;
       void printSolution();
@@ -18,6 +19,7 @@ class knapsack
       bool isSelected(int) const;
       void unSelectAll();
       vector <float> getVector(int i);
+      int bound();
 
    private:
       int numObjects;
@@ -56,7 +58,6 @@ knapsack::knapsack(ifstream &fin)
       index[j] = j;
       value[j] = v;
       cost[j] = c;
-      float rat = v / c;
       ratio[j] = v / c;
       unSelect(j);
    }
@@ -86,10 +87,33 @@ knapsack::knapsack(const knapsack &k)
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
       if (k.isSelected(i))
-	 select(i);
+	      select(i);
       else
-	 unSelect(i);
+	      unSelect(i);
    }
+}
+
+int knapsack::bound()
+{
+    for (int i = 0; i < numObjects; i++)
+    {
+      int nextItem = data[i][0];
+      int nextRatio = data[i][1];
+      if (!selected.at(nextItem))
+      {
+        if (totalCost + cost.at(nextItem) <= costLimit)
+        {
+          select(nextItem);
+        }
+        else
+        {
+          int diff = costLimit - totalCost;
+          totalValue += (diff * nextRatio);
+          totalCost += diff;
+        }
+      }
+    }
+    return totalValue;
 }
 
 int knapsack::getNumObjects() const
@@ -101,7 +125,6 @@ int knapsack::getCostLimit() const
 {
    return costLimit;
 }
-
 
 int knapsack::getValue(int i) const
 // Return the value of the ith object.
@@ -119,6 +142,13 @@ int knapsack::getCost(int i) const
       throw rangeError("Bad value in knapsack::getCost");
 
    return cost[i];
+}
+
+float knapsack::getRatio(int i) const
+{
+  if (i < 0 || i >= getNumObjects())
+      throw rangeError("Bad value in knapsack::getCost");
+  return ratio.at(i);
 }
 
 int knapsack::getCost() const
@@ -152,7 +182,7 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
    cout << "Total cost: " << totalCost << endl << endl;
 
    for (int i = 0; i < k.getNumObjects(); i++)
-      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << endl;
+      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << " " << k.getRatio(i) << endl;
 
    cout << endl;
 

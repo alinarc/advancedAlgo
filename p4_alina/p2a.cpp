@@ -30,7 +30,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack1024.input";
+   fileName = "knapsack/knapsack8.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -48,9 +48,11 @@ int main()
 
       cout << k << endl;
 
-      greedyKnapsack(k);
+      //greedyKnapsack(k);
 
-      cout << endl << "Best solution" << endl;
+      cout << "Optimistic bound for value: " << k.bound() << endl;
+
+      //cout << endl << "Best solution" << endl;
       k.printSolution();
       
    }    
