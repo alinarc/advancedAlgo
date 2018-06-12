@@ -57,8 +57,6 @@ knapsack branchAndBound(knapsack & knap)
             knap1.setObjChecked(objectInUse+1);
             knap2.unSelect(objectInUse);
             knap2.setObjChecked(objectInUse+1);
-            if (reset)
-                knap1=knap2;
             if (knap1.bound() > knap2.bound())
             {
                 theDeq.push_front(knap1);
