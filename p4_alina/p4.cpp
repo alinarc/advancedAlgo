@@ -17,7 +17,15 @@ using namespace std;
 #include "d_matrix.h"
 #include "knapsack.h"
 
-void greedyKnapsack(knapsack &k);
+void branchAndBound(knapsack &k);
+
+struct greaterThanByBound
+{
+  bool operator() (const knapsack &k1, const knapsack &k2) const
+  {
+    return k1.getBound() > k2.getBound();
+  }
+};
 
 int main()
 {
@@ -50,10 +58,13 @@ int main()
 
       //greedyKnapsack(k);
 
-      cout << "Optimistic bound for value: " << k.bound() << endl;
+
+      //cout << "Optimistic bound for value: " << k.bound() << endl;
+
+      branchAndBound(k);
 
       //cout << endl << "Best solution" << endl;
-      k.printSolution();
+      //k.printSolution();
       
    }    
    catch (indexRangeError &ex) 
@@ -66,13 +77,9 @@ int main()
    }
 }
 
-void greedyKnapsack(knapsack &k)
+void branchAndBound(knapsack &k)
 // Greedy algorithm to find optimal knapsack solution. Considers item in decreasing order of ratio (of value to cost), adds them if they don't create a conflict (exceed costLimit).
 {
-    int i = 0;
-    while (k.getCost()+k.getCost(k.getVector(i).at(0)) < k.getCostLimit() && i < k.getNumObjects())
-    {
-        k.select(k.getVector(i).at(0));
-        i+=1;
-    }
+  while (k.num)
+
 }

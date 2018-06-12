@@ -20,6 +20,8 @@ class knapsack
       void unSelectAll();
       vector <float> getVector(int i);
       int bound();
+      int getMatrixValue(int row, int col) const;
+      int getBound() const;
 
    private:
       int numObjects;
@@ -32,6 +34,8 @@ class knapsack
       matrix<float> data;
       int totalValue;
       int totalCost;
+      int num;
+      int boundValue;
 };
 
 knapsack::knapsack(ifstream &fin)
@@ -66,15 +70,19 @@ knapsack::knapsack(ifstream &fin)
    data.sortByRatio();
    totalValue = 0;
    totalCost = 0;
+   num = 0;
 }
 
 knapsack::knapsack(const knapsack &k)
 // Knapsack copy constructor.
 {
+  cout << "knapsack copy constructor " << endl;
    int n = k.getNumObjects();
    
+   index.resize(n);
    value.resize(n);
    cost.resize(n);
+   ratio.resize(n);
    selected.resize(n);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
@@ -84,22 +92,32 @@ knapsack::knapsack(const knapsack &k)
 
    for (int i = 0; i < n; i++)
    {
+      index[i] = i;
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
+      ratio[i] = k.getRatio(i);
       if (k.isSelected(i))
 	      select(i);
       else
 	      unSelect(i);
    }
+   data.populateWithVectors(index, ratio);
+   data.sortByRatio();
+   num = k.num;
+
 }
 
 int knapsack::bound()
 {
+    vector <bool> initSelected = selected;
+    int initVal = totalValue;
+    int initCost = totalCost;
+
     for (int i = 0; i < numObjects; i++)
     {
       int nextItem = data[i][0];
       int nextRatio = data[i][1];
-      if (!selected.at(nextItem))
+      if (!selected.at(nextItem) && nextItem >= num)
       {
         if (totalCost + cost.at(nextItem) <= costLimit)
         {
@@ -113,7 +131,13 @@ int knapsack::bound()
         }
       }
     }
-    return totalValue;
+    boundValue = totalValue;
+
+    selected = initSelected;
+    totalValue = initVal;
+    totalCost = initCost;
+
+    return boundValue;
 }
 
 int knapsack::getNumObjects() const
@@ -280,4 +304,14 @@ void knapsack::unSelectAll()
 vector <float> knapsack::getVector(int i)
 {
       return data[i];
+}
+
+int knapsack::getMatrixValue(int row, int col) const
+{
+  return data[row][col];
+}
+
+int knapsack::getBound() const
+{
+  return boundValue;
 }
