@@ -12,7 +12,6 @@ class knapsack
       int getValue() const;
       int getNumObjects() const;
       int getCostLimit() const;
-      float bound();
       void printSolution();
       void select(int);
       void unSelect(int);
@@ -59,9 +58,7 @@ knapsack::knapsack(ifstream &fin)
       cost[j] = c;
       float rat = v / c;
       ratio[j] = v / c;
-      unSelect(j);    
-
-
+      unSelect(j);
    }
 
    data.populateWithVectors(index, ratio);
@@ -95,72 +92,6 @@ knapsack::knapsack(const knapsack &k)
    }
 }
 
-float knapsack::bound()
-{
-      
-      float theBound = 0;
-      float theCost = 0;
-      float theValue = 0;
-      int index;
-      vector<int> usedIndices;
-      //to keep track of if it has been used in the calculation of the bound already
-      while (theCost != costLimit)
-      {
-            float maxRatio = 0;
-            int numUsed = usedIndices.size();
-            bool used = false;
-            //if the index has been used already
-            for (int i =0; i<numObjects; i++)
-            {
-                  used = false;
-                  if (numUsed!=0)
-                  {
-                        for (int j =0;j<numUsed;j++)
-                        {
-                              //check to make sure the index hasn't been used already
-                              if (i == usedIndices.at(j))
-                                    used = true;
-                        }
-                  }
-                  //cout<<endl<<"Before the loop the ratio is:"<<ratio.at(i)<<" and the max is "<<maxRatio<<" num used:"<<numUsed<<endl;
-                  if (ratio.at(i) > maxRatio && used==false)
-                  {
-                        //cout<<"went in";
-                        maxRatio = ratio.at(i);
-                        index = i; 
-                  }
-            }
-            cout<<endl<<"index is:"<<index;
-            usedIndices.push_back(index);
-            if (theCost + cost.at(index) <= costLimit)
-            //if adding the full item is possible
-            {
-                  theCost = theCost + cost.at(index);
-                  theValue = theValue + value.at(index);
-                  cout<<endl<<"The Cost is:"<<theCost<<" the Value is:"<<theValue<<endl<<"The Used Indices are: "; 
-                  for (int i=0; i <=numUsed;i++)
-                  {
-                        cout<<usedIndices.at(i)<<" ";
-                  }
-            }
-            else if (theCost + cost.at(index) > costLimit)
-            //if we can't add the full item
-            {
-                  float theDifference = costLimit - theCost;
-                  float thePercentage = theDifference/cost.at(index);
-                  //the percentage of the cost that can fit
-                  theCost = cost.at(index)*thePercentage + theCost;
-                  theValue = value.at(index)*thePercentage + theValue;
-                  cout<<endl<<"The Cost is:"<<theCost<<" the Value is:"<<theValue<<endl<<"The Used Indices are: "; 
-                  for (int i=0; i <=numUsed;i++)
-                  {
-                        cout<<usedIndices.at(i)<<" ";
-                  }
-            }
-      } 
-      return theValue;
-
-}
 int knapsack::getNumObjects() const
 {
    return numObjects;
