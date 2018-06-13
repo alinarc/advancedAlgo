@@ -19,7 +19,10 @@ class matrix
 
 		//matrix(vector <T> index, vector <T> cost, vector <T> value, vector <T> ratio);
 
-		void populateWithVectors(vector <T> index, vector <T> ratio);
+    matrix(const matrix<T> &m);
+    void populateWithVectors(vector <T> index, vector <T> ratio);
+    
+
 
 		vector<T>& operator[] (int i);
 			// index operator.
@@ -61,6 +64,18 @@ matrix<T>::matrix(int numRows, int numCols, const T& initVal):
 	mat(numRows, vector<T>(numCols,initVal))
 {}
 
+template <typename T>
+matrix<T>::matrix(const matrix<T> &m)
+{
+  for (int i = 0; i < m.rows(); i++)
+  {
+    for (int j = 0; j < m.cols(); j++)
+    {
+      mat[i][j] = m[i][j];
+    }
+  }
+
+}
 // Allows user to define a matrix with two vectors
 template <typename T>
 void matrix<T>::populateWithVectors(vector <T> index, vector <T> ratio)

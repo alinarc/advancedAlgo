@@ -18,10 +18,12 @@ class knapsack
       void unSelect(int);
       bool isSelected(int) const;
       void unSelectAll();
-      vector <float> getVector(int i);
-      int bound();
-      int getMatrixValue(int row, int col) const;
+      vector <float> getVector(int i) const;
+      float bound();
+      int getMatrix(int row, int col) const;
       int getBound() const;
+      void setNum(int i);
+      int getNum() const;
 
    private:
       int numObjects;
@@ -35,7 +37,7 @@ class knapsack
       int totalValue;
       int totalCost;
       int num;
-      int boundValue;
+      float boundValue;
 };
 
 knapsack::knapsack(ifstream &fin)
@@ -70,20 +72,24 @@ knapsack::knapsack(ifstream &fin)
    data.sortByRatio();
    totalValue = 0;
    totalCost = 0;
-   num = 0;
+   num = -1;
 }
 
 knapsack::knapsack(const knapsack &k)
 // Knapsack copy constructor.
 {
-  cout << "knapsack copy constructor " << endl;
+ // cout << "knapsack copy constructor " << endl;
    int n = k.getNumObjects();
    
+   num = k.getNum();
+   boundValue = k.getBound();
+
    index.resize(n);
    value.resize(n);
    cost.resize(n);
    ratio.resize(n);
    selected.resize(n);
+   data.resize(n, 2);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
 
@@ -93,6 +99,7 @@ knapsack::knapsack(const knapsack &k)
    for (int i = 0; i < n; i++)
    {
       index[i] = i;
+      data[i] = k.getVector(i);
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
       ratio[i] = k.getRatio(i);
@@ -101,37 +108,42 @@ knapsack::knapsack(const knapsack &k)
       else
 	      unSelect(i);
    }
-   data.populateWithVectors(index, ratio);
-   data.sortByRatio();
-   num = k.num;
 
 }
 
-int knapsack::bound()
+float knapsack::bound()
 {
     vector <bool> initSelected = selected;
     int initVal = totalValue;
     int initCost = totalCost;
 
+    boundValue = 0;
+
     for (int i = 0; i < numObjects; i++)
     {
       int nextItem = data[i][0];
-      int nextRatio = data[i][1];
-      if (!selected.at(nextItem) && nextItem >= num)
+      float nextRatio = data[i][1];
+
+      if (selected.at(nextItem))
+      {
+        boundValue += value.at(nextItem);
+      }
+
+      if (!selected.at(nextItem) && i >= num)
       {
         if (totalCost + cost.at(nextItem) <= costLimit)
         {
           select(nextItem);
+          boundValue += value.at(nextItem);
         }
         else
         {
           int diff = costLimit - totalCost;
-          totalValue += (diff * nextRatio);
+          boundValue += (diff * nextRatio);
           totalCost += diff;
         }
       }
     }
-    boundValue = totalValue;
 
     selected = initSelected;
     totalValue = initVal;
@@ -301,12 +313,12 @@ void knapsack::unSelectAll()
       }
 }
 
-vector <float> knapsack::getVector(int i)
+vector <float> knapsack::getVector(int i) const
 {
       return data[i];
 }
 
-int knapsack::getMatrixValue(int row, int col) const
+int knapsack::getMatrix(int row, int col) const
 {
   return data[row][col];
 }
@@ -314,4 +326,14 @@ int knapsack::getMatrixValue(int row, int col) const
 int knapsack::getBound() const
 {
   return boundValue;
+}
+
+int knapsack::getNum() const
+{
+  return num;
+}
+
+void knapsack::setNum(int i)
+{
+  num = i;
 }
