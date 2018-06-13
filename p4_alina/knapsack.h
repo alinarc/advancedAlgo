@@ -21,7 +21,7 @@ class knapsack
       vector <float> getVector(int i) const;
       float bound();
       int getMatrix(int row, int col) const;
-      int getBound() const;
+      float getBound() const;
       void setNum(int i);
       int getNum() const;
 
@@ -323,7 +323,7 @@ int knapsack::getMatrix(int row, int col) const
   return data[row][col];
 }
 
-int knapsack::getBound() const
+float knapsack::getBound() const
 {
   return boundValue;
 }

@@ -32,7 +32,7 @@ class matrix
 		const vector<T>& operator[](int i) const;
 			// version for constant objects
 
-      	int rows() const;
+    int rows() const;
 			// return number of rows
 		int cols() const;
 				// return number of columns

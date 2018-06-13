@@ -26,7 +26,7 @@ struct greaterThanByBound
 };
 
 void branchAndBound(knapsack &k);
-void exploreBranch(knapsack &currK, priority_queue <knapsack, vector <knapsack>, greaterThanByBound> &pq);
+void exploreBranch(knapsack &currK, knapsack &maxK, priority_queue <knapsack, vector <knapsack>, greaterThanByBound> &pq);
 
 int main()
 {
@@ -39,7 +39,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack16.input";
+   fileName = "knapsack/knapsack28.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -84,9 +84,9 @@ void branchAndBound(knapsack &k)
   priority_queue <knapsack, vector <knapsack>, greaterThanByBound> pq;
   pq.push(k);
   knapsack currK(k);
-
-  exploreBranch(currK, pq);
   knapsack maxK = currK;
+  exploreBranch(currK, maxK, pq);
+  maxK = currK;
 
   /* cout << "bound on currK is " << currK.getBound() << endl;
   cout << "value of maxK is " << maxK.getValue() << endl;
@@ -99,7 +99,7 @@ void branchAndBound(knapsack &k)
     if (currK.getBound() > maxK.getValue())
     {
       //cout << "exploring branch with bound " << currK.getBound() << endl;
-      exploreBranch(currK, pq);
+      exploreBranch(currK, maxK, pq);
       if (currK.getValue() > maxK.getValue())
         maxK = currK;
     }
@@ -107,9 +107,9 @@ void branchAndBound(knapsack &k)
   k = maxK;
 }
 
-void exploreBranch(knapsack &currK, priority_queue <knapsack, vector <knapsack>, greaterThanByBound> &pq)
+void exploreBranch(knapsack &currK, knapsack &maxK, priority_queue <knapsack, vector <knapsack>, greaterThanByBound> &pq)
 { 
-  //cout << "exploring branch at level " << currK.getNum() << endl; 
+  //cout << "exploring branch for knapsack " << currK.getNum() << endl; 
   while (currK.getNum() < currK.getNumObjects() - 1)
   {
     int num = currK.getNum() + 1;
@@ -122,13 +122,19 @@ void exploreBranch(knapsack &currK, priority_queue <knapsack, vector <knapsack>,
     {
       k1.select(item);
     }
+    else if (k1.getValue() > maxK.getValue())
+    {
+      maxK = k1;
+    }
 
-    if (k1.bound() >= k2.bound())
-      currK = k1;
-    else currK = k2;
-
-    pq.push(k1);
-    //cout << "pushing k1 with bound of " << k1.getBound() << endl;
-    pq.push(k2);
+/*     if (k1.bound() > maxK.getValue())
+    {
+      pq.push(k1);
+    } */
+    if (k2.bound() > maxK.getValue())
+    {
+      pq.push(k2);
+    }
+    currK = k1;
   }
 }
