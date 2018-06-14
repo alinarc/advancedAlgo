@@ -39,7 +39,7 @@ int main()
    // Read the name of the graph from the keyboard or
    // hard code it here for testing.
    
-   fileName = "knapsack/knapsack28.input";
+   fileName = "knapsack/knapsack16.input";
 
    /* cout << "Enter filename" << endl;
    cin >> fileName; */
@@ -86,7 +86,7 @@ void branchAndBound(knapsack &k)
   knapsack currK(k);
   knapsack maxK = currK;
   exploreBranch(currK, maxK, pq);
-  maxK = currK;
+  //maxK = currK;
 
   /* cout << "bound on currK is " << currK.getBound() << endl;
   cout << "value of maxK is " << maxK.getValue() << endl;

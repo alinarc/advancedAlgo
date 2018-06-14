@@ -113,43 +113,43 @@ knapsack::knapsack(const knapsack &k)
 
 float knapsack::bound()
 {
-    vector <bool> initSelected = selected;
-    int initVal = totalValue;
-    int initCost = totalCost;
+  vector <bool> initSelected = selected;
+  int initVal = totalValue;
+  int initCost = totalCost;
 
-    boundValue = 0;
+  boundValue = 0;
 
-    for (int i = 0; i < numObjects; i++)
+  for (int i = 0; i < numObjects; i++)
+  {
+    int nextItem = data[i][0];
+    float nextRatio = data[i][1];
+
+    if (selected.at(nextItem))
     {
-      int nextItem = data[i][0];
-      float nextRatio = data[i][1];
-
-      if (selected.at(nextItem))
-      {
-        boundValue += value.at(nextItem);
-      }
-
-      if (!selected.at(nextItem) && i >= num)
-      {
-        if (totalCost + cost.at(nextItem) <= costLimit)
-        {
-          select(nextItem);
-          boundValue += value.at(nextItem);
-        }
-        else
-        {
-          int diff = costLimit - totalCost;
-          boundValue += (diff * nextRatio);
-          totalCost += diff;
-        }
-      }
+      boundValue += value.at(nextItem);
     }
 
-    selected = initSelected;
-    totalValue = initVal;
-    totalCost = initCost;
+    if (!selected.at(nextItem) && i >= num)
+    {
+      if (totalCost + cost.at(nextItem) <= costLimit)
+      {
+        select(nextItem);
+        boundValue += value.at(nextItem);
+      }
+      else
+      {
+        int diff = costLimit - totalCost;
+        boundValue += (diff * nextRatio);
+        totalCost += diff;
+      }
+    }
+  }
 
-    return boundValue;
+  selected = initSelected;
+  totalValue = initVal;
+  totalCost = initCost;
+
+  return boundValue;
 }
 
 int knapsack::getNumObjects() const
