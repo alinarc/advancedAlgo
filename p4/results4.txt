@@ -1,0 +1,14 @@
+Alina Rossi-Conaway & Alexander Duffy
+Prof. Waleed Meleis
+EECE4542
+15 June 2018
+
+Project 4
+---------
+For this assignment, we used branching-and-bounding techniques to solve the knapsack problem by pruning solutions whose objective values were below the bound for the branch we were exploring. To do so, we used a helper function exploreBranch, which considered each item in decreasing order of value/cost ratio. generated knapsacks given these considerations, and stored the maximum-valued knapsack for that branch. If any knapsacks were encountered whose bounds were larger than the value of the current max knapsack, we stored them in a priority queue to be explored later.
+
+In the main branch-and-bound function, we explored the branch of each knapsack in the priority queue (which was designed to allow us to consider the knapsacks in decreasing order of bound value) whose bound was higher than the current max knapsack and stored the max knapsack at each iteration.
+
+There were many considerations in designing this algorithm, including how to calculate a knapsack’s bound, in which order to consider the objects, and which data structure to use to store the knapsacks to evaluate. We got the algorithm working initially, but found that it was taking longer than the exhaustive algorithm for any instance above size 16. Upon re-evaluating it, we realized that we were re-exploring branches that had already been explored, as well as pushing knapsacks to the queue whose bounds were below the value of the current maximum knapsack. Once we eliminated these bugs, we found that the algorithm ran much faster than the exhaustive solutions.
+
+For the smaller instances (up to size 64), the algorithm found the optimal solutions found by the ILP solver. For the larger instances, the 10-minute time restriction limited the solver to finding suboptimal solutions. These solutions, however, were much better (had higher objective values) than those  found by the exhaustive algorithm, and largely better or comparable to than those found by the greedy algorithm. This was kind of disappointing, as the greedy algorithm was much simpler to write and had a faster runtime overall.

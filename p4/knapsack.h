@@ -226,7 +226,7 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
 }
 
 void knapsack::printSolution()
-// Prints out the solution.
+// Prints out the solution and writes it to a file.
 {
    cout << "------------------------------------------------" << endl;
 

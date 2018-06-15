@@ -7,6 +7,9 @@
     "string_view": "cpp",
     "vector": "cpp",
     "iostream": "cpp",
-    "stack": "cpp"
+    "stack": "cpp",
+    "__split_buffer": "cpp",
+    "iterator": "cpp",
+    "list": "cpp"
   }
 }
