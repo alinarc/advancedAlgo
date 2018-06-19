@@ -10,7 +10,6 @@ class knapsack
       int getValue(int) const;
       int getCost() const;
       int getValue() const;
-      float getRatio(int i) const;
       int getNumObjects() const;
       int getCostLimit() const;
       void printSolution();
@@ -18,12 +17,7 @@ class knapsack
       void unSelect(int);
       bool isSelected(int) const;
       void unSelectAll();
-      vector <float> getVector(int i) const;
-      float bound();
-      int getMatrix(int row, int col) const;
-      float getBound() const;
-      void setNum(int i);
-      int getNum() const;
+      vector <float> getVector(int i);
 
    private:
       int numObjects;
@@ -36,8 +30,6 @@ class knapsack
       matrix<float> data;
       int totalValue;
       int totalCost;
-      int num;
-      float boundValue;
 };
 
 knapsack::knapsack(ifstream &fin)
@@ -64,6 +56,7 @@ knapsack::knapsack(ifstream &fin)
       index[j] = j;
       value[j] = v;
       cost[j] = c;
+      float rat = v / c;
       ratio[j] = v / c;
       unSelect(j);
    }
@@ -72,24 +65,16 @@ knapsack::knapsack(ifstream &fin)
    data.sortByRatio();
    totalValue = 0;
    totalCost = 0;
-   num = -1;
 }
 
 knapsack::knapsack(const knapsack &k)
 // Knapsack copy constructor.
 {
- // cout << "knapsack copy constructor " << endl;
    int n = k.getNumObjects();
    
-   num = k.getNum();
-   boundValue = k.getBound();
-
-   index.resize(n);
    value.resize(n);
    cost.resize(n);
-   ratio.resize(n);
    selected.resize(n);
-   data.resize(n, 2);
    numObjects = k.getNumObjects();
    costLimit = k.getCostLimit();
 
@@ -98,59 +83,13 @@ knapsack::knapsack(const knapsack &k)
 
    for (int i = 0; i < n; i++)
    {
-      index[i] = i;
-      data[i] = k.getVector(i);
       value[i] = k.getValue(i);
       cost[i] = k.getCost(i);
-      ratio[i] = k.getRatio(i);
       if (k.isSelected(i))
-	      select(i);
+	 select(i);
       else
-	      unSelect(i);
+	 unSelect(i);
    }
-
-}
-
-float knapsack::bound()
-// Calculates optimistic bound on knapsack based on previous decisions made
-{
-  vector <bool> initSelected = selected;
-  int initVal = totalValue;
-  int initCost = totalCost;
-
-  boundValue = 0;
-
-  for (int i = 0; i < numObjects; i++)
-  {
-    int nextItem = data[i][0];
-    float nextRatio = data[i][1];
-
-    if (selected.at(nextItem))
-    {
-      boundValue += value.at(nextItem);
-    }
-
-    if (!selected.at(nextItem) && i >= num)
-    {
-      if (totalCost + cost.at(nextItem) <= costLimit)
-      {
-        select(nextItem);
-        boundValue += value.at(nextItem);
-      }
-      else
-      {
-        int diff = costLimit - totalCost;
-        boundValue += (diff * nextRatio);
-        totalCost += diff;
-      }
-    }
-  }
-
-  selected = initSelected;
-  totalValue = initVal;
-  totalCost = initCost;
-
-  return boundValue;
 }
 
 int knapsack::getNumObjects() const
@@ -162,6 +101,7 @@ int knapsack::getCostLimit() const
 {
    return costLimit;
 }
+
 
 int knapsack::getValue(int i) const
 // Return the value of the ith object.
@@ -179,13 +119,6 @@ int knapsack::getCost(int i) const
       throw rangeError("Bad value in knapsack::getCost");
 
    return cost[i];
-}
-
-float knapsack::getRatio(int i) const
-{
-  if (i < 0 || i >= getNumObjects())
-      throw rangeError("Bad value in knapsack::getCost");
-  return ratio.at(i);
 }
 
 int knapsack::getCost() const
@@ -219,7 +152,7 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
    cout << "Total cost: " << totalCost << endl << endl;
 
    for (int i = 0; i < k.getNumObjects(); i++)
-      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << " " << k.getRatio(i) << endl;
+      cout << i << "  " << k.getValue(i) << " " << k.getCost(i) << endl;
 
    cout << endl;
 
@@ -227,7 +160,7 @@ ostream &operator<<(ostream &ostr, const knapsack &k)
 }
 
 void knapsack::printSolution()
-// Prints out the solution and writes it to a file.
+// Prints out the solution.
 {
    cout << "------------------------------------------------" << endl;
 
@@ -314,27 +247,7 @@ void knapsack::unSelectAll()
       }
 }
 
-vector <float> knapsack::getVector(int i) const
+vector <float> knapsack::getVector(int i)
 {
       return data[i];
-}
-
-int knapsack::getMatrix(int row, int col) const
-{
-  return data[row][col];
-}
-
-float knapsack::getBound() const
-{
-  return boundValue;
-}
-
-int knapsack::getNum() const
-{
-  return num;
-}
-
-void knapsack::setNum(int i)
-{
-  num = i;
 }
