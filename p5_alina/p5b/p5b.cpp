@@ -36,6 +36,7 @@ vector <Vertex> sortVerticesByDegree(Graph &g);
 void swap(int v1, int v2, vector <Vertex> &v);
 void color(Vertex &v, Graph &g, int color);
 bool isAdjacentToColor(Vertex &v, Graph &g, int color);
+int generateNeighbors(Graph &g, int &numColors);
 
 
 struct VertexProperties
@@ -59,7 +60,7 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color/color192-8.input";
+	fileName = "color/color192-6.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
@@ -88,10 +89,24 @@ int main()
 		numConflicts = greedyColoring(g, numColors);
 		cout << "Initial solution found from greedy algorithm: " << endl; 
 		printSolution(g, numConflicts, numColors);
-		
-		numConflicts = generateNeighbors(g, numColors);
+    
+    clock_t startTime = clock();
+    int runTime;
+    Graph curr;
+    while (calculateNumConflicts(g) != calculateNumConflicts(curr))
+    {
+      runTime = (clock() - startTime)/CLOCKS_PER_SEC;
+      if (runTime <= 300)
+      {
+        curr = g;
+        numConflicts = generateNeighbors(g, numColors);
+      }
+      else break;
+    }		
 		cout << "New solution from steepest descent: " << endl;
-		printSolution(g, numConflicts, numColors);
+    printSolution(g, numConflicts, numColors);
+    
+    cout << "runTime: " << runTime << " seconds" << endl;
 		
 		
 	}

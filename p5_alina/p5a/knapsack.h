@@ -4,6 +4,7 @@
 class knapsack
 {
    public:
+      knapsack();
       knapsack(ifstream &fin);
       knapsack(const knapsack &);
       int getCost(int) const;
@@ -31,6 +32,11 @@ class knapsack
       int totalValue;
       int totalCost;
 };
+
+knapsack::knapsack()
+{
+
+}
 
 knapsack::knapsack(ifstream &fin)
 // Construct a new knapsack instance using the data in fin.
