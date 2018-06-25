@@ -19,8 +19,18 @@ using namespace std;
 #include "knapsack.h"
 #include "d_random.h"
 
+struct greaterThanByValue
+{
+  bool operator() (const knapsack &k1, const knapsack &k2)
+  {
+    return k1.getValue() < k2.getValue();
+  }
+};
+
 void greedyKnapsack(knapsack &k);
+void steepestDescent(knapsack &k, const int t);
 void generateMaxNeighbor(knapsack &k);
+void generateMaxNeighbor1(knapsack &k, vector <knapsack> neighbors);
 void generateRandomSolution(knapsack &k);
 knapsack generateRandomNeighbor(knapsack &k);
 double acceptanceProb(double &oldVal, double &newVal, double &T);
@@ -28,6 +38,7 @@ int randNum(int min, int max);
 void anneal(knapsack &k, const int time);
 vector <knapsack> generateNeighbors(knapsack &k);
 void generateOneNeighbor(knapsack &k, int i, int j, vector <knapsack> &neighbors);
+void writeToCompare(knapsack &greedy, knapsack &steep, knapsack &anneal);
 
 int main()
 {
@@ -64,22 +75,25 @@ int main()
       cout << endl << "Initial solution:" << endl;
       k.printSolution();
 
-      knapsack curr;
-      while (curr.getValue() != k.getValue())
-      {
-        curr = k;
-        generateMaxNeighbor(k);
-      }
       cout << endl << "Steepest descent solution:" << endl;
       k.printSolution(); */
       
+    greedyKnapsack(k);
+    knapsack greedy = k;
+
+    cout << "Greedy solution: " << endl;
+    k.printSolution();
+
+    steepestDescent(k, 300);
+    cout << "Steepest descent solution: " << endl;
+    knapsack steep = k;
+    k.printSolution();
 
     anneal(k, 300);
-     k.printSolution();
+    knapsack anneal = k;
+    k.printSolution();
 
-
-      //cout << "acceptance probability is " << acceptanceProb(old, newVal, T) << endl;
-      
+    writeToCompare(greedy, steep, anneal);
    }    
    catch (indexRangeError &ex) 
    { 
@@ -92,7 +106,9 @@ int main()
 }
 
 void greedyKnapsack(knapsack &k)
-// Greedy algorithm to find optimal knapsack solution. Considers item in decreasing order of ratio (of value to cost), adds them if they don't create a conflict (exceed costLimit).
+// Greedy algorithm to find optimal knapsack solution. Considers items in 
+// decreasing order of ratio (of value to cost), adds them if they don't 
+// create a conflict (exceed costLimit).
 {
     int i = 0;
     while (k.getCost() + k.getCost(k.getVector(i).at(0)) <= k.getCostLimit() && i < k.getNumObjects())
@@ -102,60 +118,87 @@ void greedyKnapsack(knapsack &k)
     }
 }
 
-void anneal(knapsack &k, const int time)
+void steepestDescent(knapsack &k, const int t)
+// Explores all neighbors of knapsack k using generateNeighbors(k) function. 
+// Calls generateMaxNeighbor1 function to take the max neighbor from the pq 
+// on each iteration
 {
-  
-  greedyKnapsack(k);
-  knapsack maxKnap = k;
   clock_t startTime = clock();
   int runTime;
-  //generateRandomSolution(k);
+  knapsack max;
+  knapsack curr;
+  while (curr != k && runTime <= t) // Uses overloaded operator that compares selected vectors
+  {
+    runTime = (clock()-startTime)/CLOCKS_PER_SEC;
+    cout << "runTime is " << runTime << endl;
+    curr = k;
+    //vector <knapsack> n = generateNeighbors(k);
+
+    generateMaxNeighbor(k);
+    if (k.getValue() > max.getValue())
+      max = k;
+  }
+  k = max;
+
+}
+
+void anneal(knapsack &k, const int time)
+// Simulated annealing to find optimal solution for knapsack k in time limit.
+// Starts with a random solution, explores neighbors and randomly accepts them
+// based on their closeness to the current value
+{
   //greedyKnapsack(k);
+  generateRandomSolution(k);
+  knapsack maxKnap = k;
+  int maxVal = maxknap.getValue();
+  clock_t startTime = clock();
+  int runTime;
   cout << endl << "Randomly generated solution: " << endl;
   k.printSolution();
   
-  cout << "greedy solution: " << endl;
-  maxKnap.printSolution();
+/*   cout << "greedy solution: " << endl;
+  maxKnap.printSolution(); */
   cout << "max val: " << maxKnap.getValue() << endl;;
   double oldVal = k.getValue();
   double t = 1000.0;
   double tMin = 0.00001;
   double alpha = 0.9;
-  while (t >= tMin)
+  while (t >= tMin && runTime <= time)
   {
+    int i = 1;
     runTime = (clock() - startTime)/CLOCKS_PER_SEC;
-    if (runTime <= time)
+    while (i <= 1000 && runTime <= time)
     {
-      int i = 1;
-      while (i <= 1000)
+      runTime = (clock() - startTime)/CLOCKS_PER_SEC;
+      
+      knapsack newSol = generateRandomNeighbor(k);
+      
+      double newVal = newSol.getValue();
+      double ap = acceptanceProb(oldVal, newVal, t);
+      double randProb = (rand() % (10000)) / 10000.0;
+
+      if (ap >= randProb)
       {
-        knapsack newSol = generateRandomNeighbor(k);
+        k = newSol;
+        if (newVal > maxVal)
         {
-          double newVal = newSol.getValue();
-          double ap = acceptanceProb(oldVal, newVal, t);
-          double randProb = (rand() % (10000)) / 10000.0;
-          if (ap > randProb)
-          {
-            if (ap != 1)
-            {
-              /* cout << "ap is " << ap << endl;
-              cout << "randProb is " << randProb << endl;
-              cout << "t is " << t << endl;
-              cout << "accepting solution with value " << newVal << endl << endl; */
-            }
-            if (newVal > maxKnap.getValue())
-            {
-              maxKnap = newSol;
-            }
-            k = newSol;
-           }
-  
-         oldVal = newVal;
+          maxKnap = newSol;
+          maxVal = maxKnap.getValue();
         }
-        i += 1;
+
+        if (ap != 1) // testing--print instances where we accept solutions that are worse than current k
+        {
+          cout << "ap is " << ap << endl;
+          cout << "randProb is " << randProb << endl;
+          cout << "t is " << t << endl;
+          cout << "accepting solution with value " << newVal << endl << endl; 
+        }
+
+        oldVal = newVal;
       }
-    }
-    else break;
+      i += 1;
+      }
+
     t = t * alpha;
   }
   cout << "runTime is " << runTime << endl;
@@ -176,6 +219,20 @@ void generateMaxNeighbor(knapsack &k)
       kmax = test;
   }
   k = kmax;
+}
+
+void generateMaxNeighbor1(knapsack &k, vector <knapsack> neighbors)
+// Takes in neighbors in vector and stores them in a priority queue, allowing the 
+// max one to be stored in k 
+{
+  priority_queue <knapsack, vector <knapsack>, greaterThanByValue> pq;
+  for (int i = 0; i < neighbors.size(); i++)
+  {
+    pq.push(neighbors.at(i));
+    //cout << "adding neighbor with value " << neighbors.at(i).getValue() << endl;
+  }
+  k = pq.top();
+  //cout << endl << "max neighbor has value " << k.getValue() << endl;
 }
 
 vector <knapsack> generateNeighbors(knapsack& k)
@@ -215,7 +272,7 @@ void generateRandomSolution(knapsack &k)
 void generateOneNeighbor(knapsack &k, int i, int j, vector <knapsack> &neighbors)
 // Generates a neighbor to k by changing the 'selected' status of items i and j based on their current values
 //  1. If both items are unselected: selects one or both if they fit, or
-//  2. If both items are selected: create knapsacks where i is unselected, j is unselected, and both are unselected
+//  2. If both items are selected: create knapsacks where i is unselected, j is unselected, and both are unselected, adds them all to a vector
 //  3. If only one item is selected: flips selected and unselected if the new item fits, adds both if possible
 {
   knapsack neighbor = k;
@@ -294,7 +351,9 @@ void generateOneNeighbor(knapsack &k, int i, int j, vector <knapsack> &neighbors
 }
 
 knapsack generateRandomNeighbor(knapsack &k)
-// Generates a random neighbor by generating random indices i and j, and calling function generateOneNeighbor using them
+// Generates a random neighbor by generating random indices i and j, and calling function 
+// generateOneNeighbor using those indices. Stores one or three solutions in vector neighbors,
+// returns one at random.
 {
   knapsack neighbor(k);
   vector <knapsack> neighbors;
@@ -303,8 +362,13 @@ knapsack generateRandomNeighbor(knapsack &k)
   int j = randNum(0, size);
 
   generateOneNeighbor(k, i, j, neighbors);
-  i = randNum(0, neighbors.size());
-  neighbor = neighbors.at(i);
+  if (neighbors.size() != 1)
+  {
+    i = randNum(0, neighbors.size());
+    neighbor = neighbors.at(i);
+  }
+  else neighbor = neighbors.at(0);
+  
   return neighbor;
 }
 
@@ -326,4 +390,12 @@ int randNum(int min, int max)
 {
   int x = rand() % max + min;
   return x;
+}
+
+void writeToCompare(knapsack &greedy, knapsack &steep, knapsack &anneal)
+{
+  ofstream outFile;
+  outFile.open("output/compare.txt", ios::out | ios::app);
+  outFile << "  " << greedy.getNumObjects() << "    ||	" << greedy.getValue() << "      ||	      " << steep.getValue() << "	||        " << anneal.getValue() << endl;
+  outFile << "-----------------------------------------------------------------------" << endl;
 }

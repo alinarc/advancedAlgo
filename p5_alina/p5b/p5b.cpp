@@ -36,8 +36,14 @@ vector <Vertex> sortVerticesByDegree(Graph &g);
 void swap(int v1, int v2, vector <Vertex> &v);
 void color(Vertex &v, Graph &g, int color);
 bool isAdjacentToColor(Vertex &v, Graph &g, int color);
-int generateNeighbors(Graph &g, int &numColors);
-
+int generateMinNeighbor(Graph &g, int &numColors);
+int steepestDescent(Graph &g, int &numColors, int t);
+int randNum(int min, int max);
+int generateRandomSolution(Graph &g, int &numColors);
+Graph generateRandomNeighbor( Graph &g, int &numColors);
+double acceptanceProb(double &oldVal, double &newVal, double &T);
+int anneal(Graph &g, int &numColors, const int &timeLimit);
+void writeToCompare(Graph &g, int numColors, int greedy, int steep, int annealVal);
 
 struct VertexProperties
 {
@@ -53,6 +59,7 @@ struct EdgeProperties
 
 int main()
 {
+  srand(unsigned(time(NULL)));
 	char x;
 	ifstream fin;
 	string fileName;
@@ -86,27 +93,29 @@ int main()
 		cout << "Num edges: " << num_edges(g) << endl;
 		cout << endl;
 
-		numConflicts = greedyColoring(g, numColors);
+		int greedy = greedyColoring(g, numColors);
 		cout << "Initial solution found from greedy algorithm: " << endl; 
-		printSolution(g, numConflicts, numColors);
+		printSolution(g, greedy, numColors);
     
     clock_t startTime = clock();
-    int runTime;
-    Graph curr;
-    while (calculateNumConflicts(g) != calculateNumConflicts(curr))
-    {
-      runTime = (clock() - startTime)/CLOCKS_PER_SEC;
-      if (runTime <= 300)
-      {
-        curr = g;
-        numConflicts = generateNeighbors(g, numColors);
-      }
-      else break;
-    }		
-		cout << "New solution from steepest descent: " << endl;
-    printSolution(g, numConflicts, numColors);
     
-    cout << "runTime: " << runTime << " seconds" << endl;
+
+    int steep = steepestDescent(g, numColors, 300);
+    cout << "Steepest descent solution: " << endl;
+    printSolution(g, steep, numColors);
+
+    int annealSol = anneal(g, numColors, 300);
+    cout << "Simulated annealing solution: " << endl;
+    printSolution(g, annealSol, numColors);
+
+    writeToCompare(g, numColors, greedy, steep, annealSol);
+
+    //int runTime;		
+    //numConflicts = steepestDescent(g, numColors, 100);
+		//cout << "New solution from steepest descent: " << endl;
+    //printSolution(g, numConflicts, numColors);
+    
+   // cout << "runTime: " << runTime << " seconds" << endl;
 		
 		
 	}
@@ -120,7 +129,122 @@ int main()
 	}
 }
 
-int generateNeighbors(Graph &g, int &numColors)
+int steepestDescent(Graph &g, int &numColors, int t)
+{
+  clock_t startTime = clock();
+  int runTime;
+  
+  Graph curr = g;
+    int currCon = calculateNumConflicts(g);
+  Graph min = g;
+    int minCon = calculateNumConflicts(min);
+    int nextCon;
+
+  while (currCon != nextCon && runTime <= t)
+  {
+    runTime = (clock() - startTime)/CLOCKS_PER_SEC;
+
+    currCon = calculateNumConflicts(g); // Stores in currCon the value of graph g
+    nextCon = generateMinNeighbor(g, numColors); // Updates g to hold its minimum-valued neighbor, stores in nextCon its value
+    
+    if (nextCon < minCon)
+    // Only accept neighbors if they are better than current best
+    {
+      min = g;
+      minCon = nextCon;
+    }
+    else currCon = nextCon; // Breaks loop otherwise
+  }
+  g = min;
+  return calculateNumConflicts(g);
+  cout << "runTime is " << runTime << endl;
+}
+
+int anneal(Graph &g, int &numColors, const int &timeLimit)
+{
+  clock_t startTime = clock();
+  int runTime; 
+  //int minCon = greedyColoring(g, numColors);
+  int minCon = generateRandomSolution(g, numColors);
+  Graph minGraph = g;
+  cout << "Randomly generated solution: " << endl;
+  printSolution(g, minCon, numColors);
+
+  double oldCon = minCon;
+  double t = 1;
+  double tMin = 0.0001;
+  double alpha = 0.9;
+  
+  while (t >= tMin && runTime <= timeLimit)
+  {
+    int i = 1;
+    runTime = (clock() - startTime)/CLOCKS_PER_SEC;
+
+    while (i <= 1000 && runTime <= timeLimit)
+    {
+      runTime = (clock() - startTime)/CLOCKS_PER_SEC;
+
+      Graph newSol = generateRandomNeighbor(g, numColors);
+
+      double newCon = calculateNumConflicts(newSol);
+      double ap = acceptanceProb(oldCon, newCon, t);
+      //cout << "ap is " << ap << endl;
+      double randProb = (rand() % (100000)) / 100000.0;
+
+      if (ap >= randProb)
+      {
+        //cout << "ap is " << ap << endl;
+        g = newSol;
+        if (newCon <= minCon)
+        {
+          cout << "found solution with " << minCon << " conflicts" << endl;
+          minGraph = newSol;
+          minCon = newCon;
+        }
+
+        if (ap != 1)
+        {
+          cout << "ap is " << ap << endl;
+          cout << "randProb is " << randProb << endl;
+          cout << "t is " << t << endl;
+          cout << "min is " << minCon << endl;
+          cout << "accepting solution with  " << newCon << " conflicts" << endl << endl; 
+        }
+
+        oldCon = newCon;
+      }
+      i += 1;
+    }
+    t = t*alpha;
+  }
+
+  cout << "runTime is " << runTime << endl;
+  g = minGraph;
+  return calculateNumConflicts(g);
+
+}
+
+int generateRandomSolution(Graph &g, int &numColors)
+{
+  pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
+  for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
+  {
+    int col = randNum(0, numColors);
+    g[*vItr].color = col;
+  }
+  return calculateNumConflicts(g);
+}
+
+Graph generateRandomNeighbor(Graph &g, int &numColors)
+{
+  Graph neighb = g;
+  int randNode = randNum(0, num_vertices(g));
+  int randCol = randNum(0, numColors);
+  neighb[randNode].color = randCol;
+  return neighb;
+}
+
+int generateMinNeighbor(Graph &g, int &numColors)
 {
 	Graph currMin = g;
 	pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
@@ -216,7 +340,7 @@ void printSolution(Graph &g, int numConflicts, int numColors)
 {
 	ofstream myfile;
 	int size = num_vertices(g);
-	myfile.open("output/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
+	myfile.open("output/simulatedAnnealing/color" + to_string(num_vertices(g)) + "-" + to_string(numColors) + ".output");
 
 	cout << "Total Conflicts: " << numConflicts << endl;
 	myfile << "Total Conflicts: " << numConflicts << endl;
@@ -285,4 +409,32 @@ bool isAdjacentToColor(Vertex &v, Graph &g, int color)
 		}
 	}
 	return false;
+}
+
+int randNum(int min, int max)
+// Return a random number on the interval [min, max)
+{
+  int x = rand() % max + min;
+  return x;
+}
+
+double acceptanceProb(double &oldVal, double &newVal, double &T)
+// Calculates probability of acceptance
+{
+  //cout << "newVal is "<< newVal <<", oldVal is " << oldVal << endl;
+  double e = (oldVal-newVal)/T;
+  //cout << "exp is " << e << endl;
+  double prob = exp(e);
+  //cout << "prob is "<< prob << endl;
+  if (newVal <= oldVal) return 1;
+  //if (prob == 1) return 0; 
+  else return prob; 
+}
+
+void writeToCompare(Graph &g, int numColors, int greedy, int steep, int annealVal)
+{
+  ofstream outFile;
+  outFile.open("output/compare.txt", ios::out | ios::app);
+  outFile << "  " << num_vertices(g) << "-" << numColors << "   ||	" << greedy << "            ||	      " << steep << "	         ||        " << annealVal << endl;
+  outFile << "-----------------------------------------------------------------------" << endl;
 }

@@ -6,6 +6,7 @@ class knapsack
    public:
       knapsack(ifstream &fin);
       knapsack(const knapsack &);
+      knapsack();
       int getCost(int) const;
       int getValue(int) const;
       int getCost() const;
@@ -19,11 +20,14 @@ class knapsack
       bool isSelected(int) const;
       void unSelectAll();
       vector <float> getVector(int i) const;
+      vector <bool> getSelected() const;
       float bound();
       int getMatrix(int row, int col) const;
       float getBound() const;
       void setNum(int i);
       int getNum() const;
+
+      friend bool operator== (const knapsack &k1, const knapsack &k2);
 
    private:
       int numObjects;
@@ -110,6 +114,9 @@ knapsack::knapsack(const knapsack &k)
    }
 
 }
+
+knapsack::knapsack()
+{}
 
 float knapsack::bound()
 // Calculates optimistic bound on knapsack based on previous decisions made
@@ -200,6 +207,11 @@ int knapsack::getValue() const
    return totalValue;
 }
 
+bool operator!= (const knapsack &k1, const knapsack &k2)
+{
+  return (k1.getSelected() != k2.getSelected());
+}
+
 ostream &operator<<(ostream &ostr, const knapsack &k)
 // Print all information about the knapsack.
 {
@@ -243,7 +255,7 @@ void knapsack::printSolution()
 
    ofstream outputFile;
    numObjects = getNumObjects();
-   outputFile.open("output/knapsack"+to_string(numObjects)+".output");
+   outputFile.open("output/simulatedAnnealing/knapsack"+to_string(numObjects)+".output");
    outputFile << "Total value: " << getValue() << endl;
    outputFile << "Total cost: " << getCost() << endl << endl;
    for (int i = 0; i < getNumObjects(); i++)
@@ -253,6 +265,7 @@ void knapsack::printSolution()
    outputFile << endl;
    outputFile.close();
 }
+
 
 ostream &operator<<(ostream &ostr, vector<bool> v)
 // Overloaded output operator for vectors.
@@ -317,6 +330,11 @@ void knapsack::unSelectAll()
 vector <float> knapsack::getVector(int i) const
 {
       return data[i];
+}
+
+vector <bool> knapsack::getSelected() const
+{
+  return selected;
 }
 
 int knapsack::getMatrix(int row, int col) const
