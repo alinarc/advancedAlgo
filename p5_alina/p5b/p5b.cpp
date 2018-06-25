@@ -1,5 +1,5 @@
-// Project 5b: Graph coloring using steepest descent
-// Alexander Duffy & Alina Rossi-Conaway
+// Project 5b: Graph coloring using steepest descent & simulated annealing
+//  Alina Rossi-Conaway & Alexander Duffy
 
 #include <iostream>
 #include <string>
@@ -28,22 +28,26 @@ typedef Graph::edge_iterator edge_iterator;
 typedef Graph::vertex_iterator vertex_iterator;
 typedef Graph::adjacency_iterator adj_iterator;
 
-void initializeGraph(Graph &g, ifstream &fin);
+
 int greedyColoring(Graph &g, int numColors);
+int steepestDescent(Graph &g, int &numColors, int t);
+int anneal(Graph &g, int &numColors, const int &timeLimit);
+
+int generateRandomSolution(Graph &g, int &numColors);
+int generateMinNeighbor(Graph &g, int &numColors);
+Graph generateRandomNeighbor( Graph &g, int &numColors);
+
+int randNum(int min, int max);
+double acceptanceProb(double &oldVal, double &newVal, double &T);
+
+void initializeGraph(Graph &g, ifstream &fin);
 int calculateNumConflicts(Graph &g);
 void printSolution(Graph &g, int numConflicts, int numColors);
+void writeToCompare(Graph &g, int numColors, int greedy, int steep, int annealVal);
 vector <Vertex> sortVerticesByDegree(Graph &g);
 void swap(int v1, int v2, vector <Vertex> &v);
 void color(Vertex &v, Graph &g, int color);
 bool isAdjacentToColor(Vertex &v, Graph &g, int color);
-int generateMinNeighbor(Graph &g, int &numColors);
-int steepestDescent(Graph &g, int &numColors, int t);
-int randNum(int min, int max);
-int generateRandomSolution(Graph &g, int &numColors);
-Graph generateRandomNeighbor( Graph &g, int &numColors);
-double acceptanceProb(double &oldVal, double &newVal, double &T);
-int anneal(Graph &g, int &numColors, const int &timeLimit);
-void writeToCompare(Graph &g, int numColors, int greedy, int steep, int annealVal);
 
 struct VertexProperties
 {
@@ -54,8 +58,7 @@ struct VertexProperties
 
 // Create a struct to hold properties for each edge
 struct EdgeProperties
-{
-};
+{};
 
 int main()
 {
@@ -67,7 +70,7 @@ int main()
 	// Read the name of the graph from the keyboard or
 	// hard code it here for testing.
 
-	fileName = "color/color192-6.input";
+	fileName = "color/color192-8.input";
 
 	//   cout << "Enter filename" << endl;
 	//   cin >> fileName;
@@ -78,7 +81,6 @@ int main()
 		cerr << "Cannot open " << fileName << endl;
 		exit(1);
 	}
-
 	try
 	{
 		cout << "Reading graph" << endl;
@@ -96,9 +98,6 @@ int main()
 		int greedy = greedyColoring(g, numColors);
 		cout << "Initial solution found from greedy algorithm: " << endl; 
 		printSolution(g, greedy, numColors);
-    
-    clock_t startTime = clock();
-    
 
     int steep = steepestDescent(g, numColors, 300);
     cout << "Steepest descent solution: " << endl;
@@ -109,15 +108,6 @@ int main()
     printSolution(g, annealSol, numColors);
 
     writeToCompare(g, numColors, greedy, steep, annealSol);
-
-    //int runTime;		
-    //numConflicts = steepestDescent(g, numColors, 100);
-		//cout << "New solution from steepest descent: " << endl;
-    //printSolution(g, numConflicts, numColors);
-    
-   // cout << "runTime: " << runTime << " seconds" << endl;
-		
-		
 	}
 	catch (indexRangeError &ex)
 	{
@@ -127,6 +117,33 @@ int main()
 	{
 		cout << ex.what() << endl; exit(1);
 	}
+}
+
+int greedyColoring(Graph &g, int numColors)
+// Greedy algorithm that colors nodes one at a time based on the degree of the vertex.
+{
+	vector <Vertex> sortedNodes = sortVerticesByDegree(g);
+	int n = 0;
+	while (n < numColors)
+	{
+		for (int i = 0; i < sortedNodes.size(); i++)
+		{
+			if (n < numColors - 1)
+			{
+				if (!g[sortedNodes.at(i)].colored && !isAdjacentToColor(sortedNodes.at(i), g, n))
+				{
+					color(sortedNodes.at(i), g, n);	
+				}
+			}
+			else if (n == numColors - 1)
+			{
+				if(!g[sortedNodes.at(i)].colored)
+					color(sortedNodes.at(i), g, n);	
+			}
+		}
+		n+=1;
+	}
+	return calculateNumConflicts(g);
 }
 
 int steepestDescent(Graph &g, int &numColors, int t)
@@ -142,6 +159,7 @@ int steepestDescent(Graph &g, int &numColors, int t)
 
   while (currCon != nextCon && runTime <= t)
   {
+    cout << "generating neighbor " << endl;
     runTime = (clock() - startTime)/CLOCKS_PER_SEC;
 
     currCon = calculateNumConflicts(g); // Stores in currCon the value of graph g
@@ -188,21 +206,19 @@ int anneal(Graph &g, int &numColors, const int &timeLimit)
 
       double newCon = calculateNumConflicts(newSol);
       double ap = acceptanceProb(oldCon, newCon, t);
-      //cout << "ap is " << ap << endl;
       double randProb = (rand() % (100000)) / 100000.0;
 
       if (ap >= randProb)
       {
-        //cout << "ap is " << ap << endl;
         g = newSol;
         if (newCon <= minCon)
         {
-          cout << "found solution with " << minCon << " conflicts" << endl;
+          cout << "found solution with " << minCon << " conflicts" << endl; // Testing--print when we reach a current best solution
           minGraph = newSol;
           minCon = newCon;
         }
 
-        if (ap != 1)
+        if (ap != 1) // Testing--print instances where we accept solutions that are worst than g
         {
           cout << "ap is " << ap << endl;
           cout << "randProb is " << randProb << endl;
@@ -225,6 +241,7 @@ int anneal(Graph &g, int &numColors, const int &timeLimit)
 }
 
 int generateRandomSolution(Graph &g, int &numColors)
+// Generates a random solution by coloring each node a random color. Stores this solution in Graph g.
 {
   pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
   for (vertex_iterator vItr = vItrRange.first; vItr != vItrRange.second; ++vItr)
@@ -236,6 +253,7 @@ int generateRandomSolution(Graph &g, int &numColors)
 }
 
 Graph generateRandomNeighbor(Graph &g, int &numColors)
+// Generates a random neighbor of Graph g. Returns this neighbor.
 {
   Graph neighb = g;
   int randNode = randNum(0, num_vertices(g));
@@ -245,6 +263,8 @@ Graph generateRandomNeighbor(Graph &g, int &numColors)
 }
 
 int generateMinNeighbor(Graph &g, int &numColors)
+// Generates all neighbors that come from changing one node's color. Stores the neighbor with the minimum 
+// number of conflicts in graph g and returns its conflict count.
 {
 	Graph currMin = g;
 	pair <vertex_iterator, vertex_iterator> vItrRange = vertices(g);
@@ -262,6 +282,26 @@ int generateMinNeighbor(Graph &g, int &numColors)
 	}
 	g = currMin;
 	return calculateNumConflicts(g);
+}
+
+int randNum(int min, int max)
+// Return a random number on the interval [min, max)
+{
+  int x = rand() % max + min;
+  return x;
+}
+
+double acceptanceProb(double &oldVal, double &newVal, double &T)
+// Calculates probability of acceptance
+{
+  //cout << "newVal is "<< newVal <<", oldVal is " << oldVal << endl;
+  double e = (oldVal-newVal)/T;
+  //cout << "exp is " << e << endl;
+  double prob = exp(e);
+  //cout << "prob is "<< prob << endl;
+  if (newVal <= oldVal) return 1;
+  //if (prob == 1) return 0; 
+  else return prob; 
 }
 
 void initializeGraph(Graph &g, ifstream &fin)
@@ -292,32 +332,7 @@ void initializeGraph(Graph &g, ifstream &fin)
 	}
 }
 
-int greedyColoring(Graph &g, int numColors)
-// Greedy algorithm that colors nodes one at a time based on the degree of the vertex.
-{
-	vector <Vertex> sortedNodes = sortVerticesByDegree(g);
-	int n = 0;
-	while (n < numColors)
-	{
-		for (int i = 0; i < sortedNodes.size(); i++)
-		{
-			if (n < numColors - 1)
-			{
-				if (!g[sortedNodes.at(i)].colored && !isAdjacentToColor(sortedNodes.at(i), g, n))
-				{
-					color(sortedNodes.at(i), g, n);	
-				}
-			}
-			else if (n == numColors - 1)
-			{
-				if(!g[sortedNodes.at(i)].colored)
-					color(sortedNodes.at(i), g, n);	
-			}
-		}
-		n+=1;
-	}
-	return calculateNumConflicts(g);
-}
+
 
 int calculateNumConflicts(Graph &g)
 // Calculate the number of conflicts in Graph g
@@ -409,26 +424,6 @@ bool isAdjacentToColor(Vertex &v, Graph &g, int color)
 		}
 	}
 	return false;
-}
-
-int randNum(int min, int max)
-// Return a random number on the interval [min, max)
-{
-  int x = rand() % max + min;
-  return x;
-}
-
-double acceptanceProb(double &oldVal, double &newVal, double &T)
-// Calculates probability of acceptance
-{
-  //cout << "newVal is "<< newVal <<", oldVal is " << oldVal << endl;
-  double e = (oldVal-newVal)/T;
-  //cout << "exp is " << e << endl;
-  double prob = exp(e);
-  //cout << "prob is "<< prob << endl;
-  if (newVal <= oldVal) return 1;
-  //if (prob == 1) return 0; 
-  else return prob; 
 }
 
 void writeToCompare(Graph &g, int numColors, int greedy, int steep, int annealVal)

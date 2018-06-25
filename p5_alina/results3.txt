@@ -1,0 +1,19 @@
+Alina Rossi-Conaway & Alexander Duffy
+Prof. Waleed Meleis
+EECE4542
+25 June 2018
+
+For this assignment, used two local search techniques (steepest descent and simulated annealing) to solve the knapsack and graph coloring instances. Results are summarized in document compare.txt in the respective output folders.
+
+----------
+In steepest descent, we started with the solution from the greedy algorithm as our initial solution. We then explored the neighborhood of this solution and only accepted solutions which were more favorable than our current solution. In every instance, except for color192-6, steepest descent did not improve upon the greedy solution. This shows how steepest descent is susceptible to getting stuck in local minima, as it only accepts its neighbor if it is better than the current best solution.
+
+In simulated annealing, we started with a randomly generated solution and varied the probability of accepting a neighboring solution over the course of the runtime, meaning that we accepted more worse neighbors at the beginning than we did towards the end. This allowed the program to get out of local optima by exploring the solution space more broadly at first, and then slowly honing in on a globally optimal solution.
+
+As shown in compare.txt, simulated annealing converged on solutions that were equal or nearly equal to the optimal solutions found by the ILP solver. Due to the probabilistic nature of the algorithm, however the solution tends to be different on each run.
+
+There were many levers to turn, so to speak, in designing this algorithm, including: starting temperature, temperature length, cooling rate (alpha value), initial solution, and neighborhood generation. This last one proved particularly nontrivial: initially simulated annealing was not converging on a favorable solution for larger instances of knapsack, but when I modified the neighbor generating function the algorithm’s effectiveness improved greatly. 
+
+For larger instances of graph coloring, the high starting temperature made it such that the algorithm was spending too much time considering worse solutions and not enough time honing in on optimal solutions (too much diversification, not enough intensification). To rectify this, I decreased the starting temperature and the algorithm converged much more quickly.
+
+In summary: for knapsack, steepest descent did not improve upon the greedy solution, but simulated annealing did so greatly (arriving largely at the optimal ILP solutions) at the cost of runtime. For these graph coloring instances, the greedy algorithm by and large arrived at the optimal solutions found by the ILP solver. Steepest descent and simulated annealing only improved upon the solution in two instances. 

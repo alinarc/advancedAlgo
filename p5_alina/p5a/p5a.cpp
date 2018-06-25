@@ -29,15 +29,17 @@ struct greaterThanByValue
 
 void greedyKnapsack(knapsack &k);
 void steepestDescent(knapsack &k, const int t);
+void anneal(knapsack &k, const int time);
+
+void generateRandomSolution(knapsack &k);
 void generateMaxNeighbor(knapsack &k);
 void generateMaxNeighbor1(knapsack &k, vector <knapsack> neighbors);
-void generateRandomSolution(knapsack &k);
 knapsack generateRandomNeighbor(knapsack &k);
-double acceptanceProb(double &oldVal, double &newVal, double &T);
-int randNum(int min, int max);
-void anneal(knapsack &k, const int time);
 vector <knapsack> generateNeighbors(knapsack &k);
 void generateOneNeighbor(knapsack &k, int i, int j, vector <knapsack> &neighbors);
+
+double acceptanceProb(double &oldVal, double &newVal, double &T);
+int randNum(int min, int max);
 void writeToCompare(knapsack &greedy, knapsack &steep, knapsack &anneal);
 
 int main()
@@ -206,6 +208,8 @@ void anneal(knapsack &k, const int time)
 }
 
 void generateMaxNeighbor(knapsack &k)
+// Generates a max neighbor for knapsack k using a simple neighborhood function where we just
+// select or unselect one item in the knapsack
 {
   knapsack kmax = k;
   for (int i = 0; i < k.getNumObjects(); i++)
@@ -222,23 +226,22 @@ void generateMaxNeighbor(knapsack &k)
 }
 
 void generateMaxNeighbor1(knapsack &k, vector <knapsack> neighbors)
-// Takes in neighbors in vector and stores them in a priority queue, allowing the 
-// max one to be stored in k 
+// Second max neighbor function. Takes in neighbors in vector (generated according to 
+// neighborhood function generateOneNeighbor()) and stores them in a priority queue, 
+// allowing the max one to be stored in k. Basically converts vector of neighbors 
+// created by generateNeighbors function into a priority queue
 {
   priority_queue <knapsack, vector <knapsack>, greaterThanByValue> pq;
   for (int i = 0; i < neighbors.size(); i++)
   {
     pq.push(neighbors.at(i));
-    //cout << "adding neighbor with value " << neighbors.at(i).getValue() << endl;
   }
   k = pq.top();
-  //cout << endl << "max neighbor has value " << k.getValue() << endl;
 }
 
 vector <knapsack> generateNeighbors(knapsack& k)
-// Generates k's neighbors by creating combinations of two items and calling generateOneNeighbor for all of those combinationseither:
-//  1. If both items are unselected: selects one or both if they fit, or
-//  2. If only one item is selected: flips selected and unselected if the new item fits
+// Generates all of k's neighbors by creating combinations of two items and calling 
+// generateOneNeighbor for all of those combinations 
 {
   vector <knapsack> neighbors;
 
@@ -252,7 +255,6 @@ vector <knapsack> generateNeighbors(knapsack& k)
   }
   return neighbors;
 }
-
 
 void generateRandomSolution(knapsack &k)
 // Generates random solution to use as initial solution in simulated annealing
@@ -270,7 +272,7 @@ void generateRandomSolution(knapsack &k)
 }
 
 void generateOneNeighbor(knapsack &k, int i, int j, vector <knapsack> &neighbors)
-// Generates a neighbor to k by changing the 'selected' status of items i and j based on their current values
+// More sophisticated neighbor generating function. Generates a neighbor to k by changing the 'selected' status of items i and j based on their current values
 //  1. If both items are unselected: selects one or both if they fit, or
 //  2. If both items are selected: create knapsacks where i is unselected, j is unselected, and both are unselected, adds them all to a vector
 //  3. If only one item is selected: flips selected and unselected if the new item fits, adds both if possible
@@ -373,15 +375,11 @@ knapsack generateRandomNeighbor(knapsack &k)
 }
 
 double acceptanceProb(double &oldVal, double &newVal, double &T)
-// Calculates probability of acceptance
+// Calculates probability of acceptance of new solution
 {
-  //cout << "newVal is "<< newVal <<", oldVal is " << oldVal << endl;
   double e = (newVal-oldVal)/T;
-  //cout << "exp is " << e << endl;
   double prob = exp(e);
-  //cout << "prob is "<< prob << endl;
   if (prob >= 1) return 1;
-  //if (prob == 1) return 0; 
   else return prob; 
 }
 
@@ -393,6 +391,7 @@ int randNum(int min, int max)
 }
 
 void writeToCompare(knapsack &greedy, knapsack &steep, knapsack &anneal)
+// Write to comparison file
 {
   ofstream outFile;
   outFile.open("output/compare.txt", ios::out | ios::app);
