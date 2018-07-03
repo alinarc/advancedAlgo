@@ -152,7 +152,7 @@ void anneal(knapsack &k, const int time)
   //greedyKnapsack(k);
   generateRandomSolution(k);
   knapsack maxKnap = k;
-  int maxVal = maxknap.getValue();
+  int maxVal = maxKnap.getValue();
   clock_t startTime = clock();
   int runTime;
   cout << endl << "Randomly generated solution: " << endl;
